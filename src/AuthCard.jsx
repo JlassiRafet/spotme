@@ -74,7 +74,7 @@
       if (r.ok) {
         onLogin(r.data.user);
       } else {
-        setError(r.error || 'Login failed.');
+        setError(r.error || 'Sign in failed.');
       }
     };
 
@@ -97,10 +97,10 @@
         </div>
         <div className="auth-form-bottom">
           <PrimaryButton onClick={submit} disabled={busy}>
-            {busy ? 'Logging in…' : 'Log In'}
+            {busy ? 'Signing in…' : 'Sign In'}
           </PrimaryButton>
           <Divider />
-          <GoogleButton label="Log In via Google" />
+          <GoogleButton label="Sign In via Google" />
         </div>
       </form>
     );
@@ -173,7 +173,7 @@
           {localError && <p className="auth-error-banner" role="alert">{localError}</p>}
           <p className="switch-line">
             Already have an account?{' '}
-            <button type="button" onClick={() => onSwitch('login')} disabled={disabled}>Log in</button>
+            <button type="button" onClick={() => onSwitch('login')} disabled={disabled}>Sign in</button>
           </p>
         </div>
         <div className="auth-form-bottom">
@@ -286,7 +286,7 @@
   /* ---------- Card shell with transitions ---------- */
 
   const VIEW_CONTENT = {
-    'login':    { title: 'Welcome Back',   desc: 'Your AI coach is ready. Are you?' },
+    'login':    { title: 'Sign In',        desc: 'Your AI coach is ready. Are you?' },
     'signup-1': { title: 'Create Account', desc: "Create your path. We'll guide it." },
     'signup-2': { title: 'A Few Details',  desc: 'Tell us about you so we can tailor your plan.' }
   };

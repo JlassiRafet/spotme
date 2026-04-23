@@ -24,8 +24,8 @@ sessionRoutes.get('/', requireAuth, handler((req, res) => {
       id:        r.id,
       title:     r.title,
       tags:      r.tags ? r.tags.split(',').filter(Boolean) : [],
-      createdAt: r.created_at,
-      updatedAt: r.updated_at
+      createdAt: r.created_at * 1000,
+      updatedAt: r.updated_at * 1000
     }))
   });
 }));
@@ -53,8 +53,8 @@ sessionRoutes.get('/:id', requireAuth, handler((req, res) => {
       id:        session.id,
       title:     session.title,
       tags:      session.tags ? session.tags.split(',').filter(Boolean) : [],
-      createdAt: session.created_at,
-      updatedAt: session.updated_at
+      createdAt: session.created_at * 1000,
+      updatedAt: session.updated_at * 1000
     },
     messages: msgs
   });

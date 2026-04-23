@@ -137,6 +137,12 @@
     setSavedUser(null);
   }
 
+  async function deleteAccount() {
+    const r = await request('/api/auth/account', { method: 'DELETE' });
+    if (r.ok) { setToken(null); setSavedUser(null); }
+    return r;
+  }
+
   async function me() {
     const r = await request('/api/auth/me');
     if (r.ok) setSavedUser(r.data.user);
@@ -252,7 +258,7 @@
     // session state
     getToken, getSavedUser,
     // auth
-    signup, login, logout, me,
+    signup, login, logout, me, deleteAccount,
     // chat
     chat, streamChat, identify,
     // history

@@ -7,7 +7,7 @@
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
   const { useState, useRef } = React;
-  const { CrownIcon, TrashIcon, UserIcon, CameraIcon } = SpotMe.icons;
+  const { CrownIcon, TrashIcon, UserIcon, CameraIcon, LogoutIcon } = SpotMe.icons;
   const {
     TextInput, SegmentedGroup, MeasureField,
     convertWeight, convertHeight, PrimaryButton
@@ -57,8 +57,53 @@
     );
   }
 
-  function ProfilePage({ profile, onUpdateProfile }) {
+  function DeleteAccountDialog({ onConfirm, onCancel, busy }) {
+    const [input, setInput] = useState('');
+    const phrase = 'delete my account';
+    const match = input.trim().toLowerCase() === phrase;
+    return (
+      <div className="delete-dialog-overlay" role="dialog" aria-modal="true">
+        <div className="delete-dialog">
+          <h3 className="delete-dialog-title">Delete your account?</h3>
+          <p className="delete-dialog-body">
+            This permanently removes your profile, all sessions, and all messages.
+            There's no going back.
+          </p>
+          <p className="delete-dialog-prompt">
+            Type <strong>delete my account</strong> to confirm:
+          </p>
+          <input
+            type="text"
+            className="auth-input"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="delete my account"
+            autoFocus
+            disabled={busy}
+          />
+          <div className="delete-dialog-actions">
+            <button type="button" className="profile-row-btn" onClick={onCancel} disabled={busy}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="profile-row-btn danger"
+              onClick={onConfirm}
+              disabled={!match || busy}
+            >
+              {busy ? 'Deleting…' : 'Delete account'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function ProfilePage({ profile, onUpdateProfile, onDeleteAccount }) {
     const fileInputRef = useRef(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
 
     const handleAvatarChoose = (e) => {
       const file = e.target.files && e.target.files[0];
@@ -208,6 +253,44 @@
             </div>
           </div>
         </section>
+
+        {/* --------- Danger Zone --------- */}
+        <section className="profile-section">
+          <h2 className="profile-section-title" style={{ color: 'var(--color-error, #ff5555)' }}>
+            Danger Zone
+          </h2>
+          <div className="profile-divider" />
+          <div className="profile-row">
+            <div className="profile-row-info">
+              <span className="profile-row-label">Delete account</span>
+              <span className="profile-row-value muted">
+                Permanently removes your account, all sessions, and messages.
+              </span>
+            </div>
+            <button type="button" className="profile-row-btn danger"
+                    onClick={() => { setShowDeleteDialog(true); setDeleteError(''); }}>
+              <TrashIcon /> <span>Delete my account</span>
+            </button>
+          </div>
+          {deleteError && <p className="auth-error-banner" role="alert">{deleteError}</p>}
+        </section>
+
+        {showDeleteDialog && (
+          <DeleteAccountDialog
+            busy={deleting}
+            onCancel={() => setShowDeleteDialog(false)}
+            onConfirm={async () => {
+              setDeleting(true);
+              setDeleteError('');
+              const r = await onDeleteAccount();
+              setDeleting(false);
+              if (!r.ok) {
+                setShowDeleteDialog(false);
+                setDeleteError(r.error || 'Could not delete account. Try again.');
+              }
+            }}
+          />
+        )}
       </div>
     );
   }

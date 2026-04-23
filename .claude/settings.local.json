@@ -3,10 +3,24 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Read(//c/Users/Rafet/.claude/**)",
+      "Read(//c/c/Users/Rafet/Documents/spotme/server/**)",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:8787/api/health)",
+      "Bash(python -m json.tool)",
+      "Bash(git worktree *)",
+      "Bash(git branch *)",
+      "Read(//c/Users/Rafet/Documents/spotme-api/**)",
+      "Read(//c/Users/Rafet/Documents/spotme-auth/**)",
+      "Bash(git merge feat/streaming --no-ff -m ' *)"
     ],
     "additionalDirectories": [
-      "C:\\Users\\Rafet\\Documents\\spotme\\.claude"
+      "C:\\Users\\Rafet\\Documents\\spotme\\.claude",
+      "C:\\Users\\Rafet\\Documents\\spotme-history\\src",
+      "C:\\Users\\Rafet\\Documents\\spotme-api\\src",
+      "C:\\Users\\Rafet\\Documents\\spotme-streaming\\server\\routes",
+      "C:\\Users\\Rafet\\Documents\\spotme-streaming\\src"
     ]
   }
 }

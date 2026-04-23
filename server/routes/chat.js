@@ -27,7 +27,7 @@ export const chatRoutes = express.Router();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const CHAT_MODEL   = process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile';
-const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
+const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 /* ---------- system prompt ---------- */
 
@@ -227,12 +227,20 @@ chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
       }
     }
   } catch (e) {
-    console.error('[spotme] Groq stream failed:', e?.status, e?.message || e);
     const status = e?.status;
+    const detail = e?.message || String(e);
+    console.error('[spotme] Groq stream failed:', status, detail);
     if (status === 401) send('error', { message: 'Server misconfigured — check GROQ_API_KEY.' });
-    else if (status === 429) send('error', { message: "Rate limited. Give me a minute." });
-    else if (status === 413) send('error', { message: 'Image too large for vision model.' });
-    else send('error', { message: "Can't reach AI right now. Try again." });
+    else if (status === 429) send('error', { message: "Rate limited. Give me a minute and try again." });
+    else if (status === 413) send('error', { message: 'Image too large for the vision model.' });
+    else if (status === 400) send('error', { message: `Bad request to AI (${detail}).` });
+    else send('error', { message: `AI error ${status || '(network)'}: ${detail}` });
+    res.end();
+    return;
+  }
+
+  if (!replyText) {
+    send('error', { message: 'AI returned an empty response. Try again.' });
     res.end();
     return;
   }
@@ -241,7 +249,7 @@ chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
   const info = stmts.insertMessage.run({
     session_id:      sessionId,
     role:            'assistant',
-    content:         replyText || '(Empty reply.)',
+    content:         replyText,
     image_data_url:  null,
     structured_json: null
   });

@@ -145,3 +145,10 @@ authRoutes.post('/logout', requireAuth, handler((req, res) => {
 authRoutes.get('/me', requireAuth, handler((req, res) => {
   res.json({ user: publicUser(req.user) });
 }));
+
+/* ---------- DELETE /api/auth/account ---------- */
+
+authRoutes.delete('/account', requireAuth, handler((req, res) => {
+  stmts.deleteUser.run(req.user.id);
+  res.json({ ok: true });
+}));

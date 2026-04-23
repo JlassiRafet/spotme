@@ -166,6 +166,8 @@
      ------------------------------------------------------------ */
   function ChatInput({ value, onChange, onSend, attachments, onAttach, onRemoveAttachment, disabled, autoFocus }) {
     const taRef = useRef(null);
+    const wrapRef = useRef(null);
+
     useEffect(() => {
       if (autoFocus && taRef.current) taRef.current.focus();
     }, [autoFocus]);
@@ -178,6 +180,52 @@
       el.style.height = Math.min(el.scrollHeight, 160) + 'px';
     }, [value]);
 
+    // Paste image from clipboard
+    useEffect(() => {
+      const el = taRef.current;
+      if (!el) return;
+      const handlePaste = (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+          if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (!file) continue;
+            const reader = new FileReader();
+            reader.onload = (ev) => onAttach({ name: file.name || 'pasted-image.png', size: file.size, dataUrl: ev.target.result });
+            reader.readAsDataURL(file);
+          }
+        }
+      };
+      el.addEventListener('paste', handlePaste);
+      return () => el.removeEventListener('paste', handlePaste);
+    }, [onAttach]);
+
+    // Drag-and-drop image onto the input box
+    useEffect(() => {
+      const el = wrapRef.current;
+      if (!el) return;
+      const prevent = (e) => e.preventDefault();
+      const handleDrop = (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer?.files;
+        if (!files) return;
+        for (const file of files) {
+          if (!file.type.startsWith('image/')) continue;
+          const reader = new FileReader();
+          reader.onload = (ev) => onAttach({ name: file.name, size: file.size, dataUrl: ev.target.result });
+          reader.readAsDataURL(file);
+        }
+      };
+      el.addEventListener('dragover', prevent);
+      el.addEventListener('drop', handleDrop);
+      return () => {
+        el.removeEventListener('dragover', prevent);
+        el.removeEventListener('drop', handleDrop);
+      };
+    }, [onAttach]);
+
     const submit = () => {
       const v = (value || '').trim();
       if (!v || disabled) return;
@@ -185,7 +233,7 @@
     };
 
     return (
-      <div className="chat-input liquid">
+      <div className="chat-input liquid" ref={wrapRef}>
         <textarea
           ref={taRef}
           className="chat-input-textarea"
@@ -204,7 +252,12 @@
           <div className="chat-attachments">
             {attachments.map((a, i) => (
               <span key={i} className="chat-attachment">
-                <ImageIcon /> <span>{a.name}</span>
+                {a.dataUrl && a.dataUrl.startsWith('data:image/') ? (
+                  <img src={a.dataUrl} alt={a.name} className="chat-attachment-thumb" />
+                ) : (
+                  <ImageIcon />
+                )}
+                <span>{a.name}</span>
                 <button type="button" onClick={() => onRemoveAttachment(i)} aria-label="Remove">×</button>
               </span>
             ))}
@@ -220,7 +273,7 @@
             </button>
           </div>
           <div className="chat-input-right">
-            <span className="model-name">Claude Sonnet 4.6 · Thinking</span>
+            <span className="model-name">SpotMe Coach 1.0</span>
             <button type="button" className="icon-btn" aria-label="Voice input" title="Voice (coming soon)">
               <MicIcon />
             </button>
@@ -265,7 +318,7 @@
   /* ------------------------------------------------------------
      The page itself.
      ------------------------------------------------------------ */
-  function ChatPage({ profile, initialSession }) {
+  function ChatPage({ profile, initialSession, onSessionCreated }) {
     const [messages, setMessages] = useState([]);
     const [sessionId, setSessionId] = useState(null);
     const [input, setInput] = useState('');
@@ -331,7 +384,10 @@
         sessionId: sessionId || undefined,
         message: text,
         imageDataUrl,
-        onSession: (id) => setSessionId(id),
+        onSession: (id) => {
+          setSessionId(id);
+          if (onSessionCreated) onSessionCreated();
+        },
         onChunk: (delta) => {
           setMessages(m => {
             const copy = [...m];
@@ -375,16 +431,14 @@
         {loadingSession ? (
           <div className="chat-empty">
             <div className="chat-empty-brand">
-              <SpotMeLogo size={44} />
-              <h1 className="chat-empty-title">spotme <span>coach</span></h1>
+              <h1 className="chat-empty-title">SpotMe <span>Coach</span></h1>
             </div>
             <p style={{ textAlign: 'center', opacity: 0.6 }}>Loading session…</p>
           </div>
         ) : empty ? (
           <div className="chat-empty">
             <div className="chat-empty-brand">
-              <SpotMeLogo size={44} />
-              <h1 className="chat-empty-title">spotme <span>coach</span></h1>
+              <h1 className="chat-empty-title">SpotMe <span>Coach</span></h1>
             </div>
             <div className="chat-empty-input">
               <ChatInput

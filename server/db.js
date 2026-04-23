@@ -201,7 +201,9 @@ export const stmts = {
     INSERT INTO messages (session_id, role, content, image_data_url, structured_json)
     VALUES (@session_id, @role, @content, @image_data_url, @structured_json)
   `),
-  listMessages:       prep('SELECT * FROM messages WHERE session_id = ? ORDER BY created_at ASC, id ASC')
+  listMessages:       prep('SELECT * FROM messages WHERE session_id = ? ORDER BY created_at ASC, id ASC'),
+
+  deleteUser:         prep('DELETE FROM users WHERE id = ?')
 };
 
 stmts.cleanExpiredTokens.run();
