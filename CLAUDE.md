@@ -14,7 +14,7 @@
 ## Workflow (Boris Cherny Tips)
 
 **Tip 1 — Parallel work:** Use git worktrees for parallel features.
-Commands: `git worktree add ../spotme-feat-X feat/X`
+Commands: `git worktree add -b feat/X ../spotme-X master`
 Aliases: za=worktree1, zb=worktree2, zc=worktree3
 
 **Tip 2 — Plan first:** Use `/plan <task>` before any complex change.
