@@ -62,9 +62,10 @@ Format for copy-paste into new chat.
 ## Done
 - ChatPage wired to api.js (Groq via server) ✓
 - History page fetches real sessions, reopen works ✓
+- Auth persistence on refresh (booting state + /api/auth/me bootstrap) ✓
+- Streaming responses (POST /api/chat/stream SSE + streamChat() + ChatPage) ✓
 
 ## Next Work
-- Streaming responses (SSE backend + frontend)
 - Upgrade/payment flow (501 stub)
 - Tracker page (placeholder only)
-- Auth persistence on refresh (check token via /api/auth/me on load)
+- UI polish pass
