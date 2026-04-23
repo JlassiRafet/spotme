@@ -2,9 +2,8 @@
    SpotMe — ChatPage
    Empty state: big "SpotMe" wordmark + input box + workout carousel
    Active:     scrolling message thread + input box pinned at bottom
-   Replies come from the real Anthropic API (no-API-key call, the
-   sandbox routes it). The system prompt tunes Claude to act as a
-   fitness coach that knows the user's profile.
+   Replies come from SpotMe.api.chat() — the backend server on the
+   same origin handles all AI calls.
    ============================================================ */
 
 (function () {
@@ -127,7 +126,12 @@
 
     const handlePicked = (e) => {
       const file = e.target.files && e.target.files[0];
-      if (file) onAttach({ name: file.name, size: file.size });
+      if (!file) { setOpen(false); return; }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        onAttach({ name: file.name, size: file.size, dataUrl: ev.target.result });
+      };
+      reader.readAsDataURL(file);
       setOpen(false);
     };
 
@@ -259,151 +263,6 @@
   }
 
   /* ------------------------------------------------------------
-     Canned-reply fallback library.
-
-     The real Claude API works when this app is loaded as a Claude
-     Artifact (the sandbox injects auth). When hosted elsewhere
-     (local dev server, static host without a proxy, offline demo),
-     the browser blocks the call at CORS. Instead of surfacing an
-     error there, we match the user's message against a small set
-     of keyword rules and return a plausible coach-style reply.
-     The real API is always tried first; fallback only fires when
-     it actually fails.
-     ------------------------------------------------------------ */
-  const CANNED_REPLIES = [
-    {
-      keys: ['warmup', 'warm up', 'warm-up'],
-      reply: (p) => `A quick warm-up for a push day, tailored to a ${p.level || 'general'} lifter:
-
-1. 60s light row or bike (get your breathing up)
-2. Arm circles, 10 each direction
-3. Band pull-aparts x 15
-4. Wall slides x 10
-5. Push-up to down-dog x 8
-
-That's it — you're warm without burning energy you'll need for the working sets.`
-    },
-    {
-      keys: ['push day', 'push workout', 'chest'],
-      reply: (p) => `Push day, tuned for ${p.level || 'intermediate'}:
-
-• Bench press — 4 x 6–8
-• Incline DB press — 3 x 8–10
-• Seated overhead press — 3 x 8
-• Lateral raise — 3 x 12–15
-• Tricep pushdown — 3 x 10–12
-• Rope overhead extension — 2 x 12
-
-Rest 90s on compounds, 60s on the rest. Push the last set of each.`
-    },
-    {
-      keys: ['pull day', 'pull workout', 'back'],
-      reply: (p) => `Pull day:
-
-• Deadlift — 4 x 5 (work up to a hard top set)
-• Pull-ups or lat pulldown — 4 x 6–10
-• Chest-supported row — 3 x 10
-• Face pulls — 3 x 15
-• Barbell curl — 3 x 8
-• Hammer curl — 2 x 12
-
-If deadlifts feel heavy today, drop to 3 x 5 at 80% and keep moving.`
-    },
-    {
-      keys: ['leg day', 'leg workout', 'quad', 'squat'],
-      reply: (p) => `Leg day:
-
-• Back squat — 4 x 5
-• Romanian deadlift — 3 x 8
-• Walking lunge — 3 x 10 each leg
-• Leg curl — 3 x 12
-• Calf raise — 4 x 12–15
-
-Balanced quad + posterior chain. Don't skip the RDLs — they carry most of your strength.`
-    },
-    {
-      keys: ['cardio', 'conditioning'],
-      reply: () => `30-minute cardio + core circuit, 3 rounds:
-
-• 3 min zone-2 bike/row
-• 30s plank
-• 15 Russian twists each side
-• 10 mountain climbers each side
-• 60s rest
-
-Keep the bike/row easy. This is conditioning, not a grinder.`
-    },
-    {
-      keys: ['rest', 'recovery', 'sore'],
-      reply: () => `If you're sore, you have three good options:
-
-1. Active recovery — 20 min easy walk or bike, mobility for 10 min
-2. Deload — same lifts but 60% of your normal weight, 3 sets of 5
-3. Full rest — take the day, hydrate, sleep 8+
-
-Soreness that lasts past 48h usually means volume was too high, not that you need to push through.`
-    }
-  ];
-
-  function cannedReply(userText, profile) {
-    const q = (userText || '').toLowerCase();
-    const match = CANNED_REPLIES.find(rule => rule.keys.some(k => q.includes(k)));
-    if (match) return match.reply(profile);
-    // Generic fallback
-    const name = profile.firstName || 'there';
-    return `Hey ${name} — I'm running in demo mode right now (the live API isn't reachable from this environment), but here's the idea:
-
-Based on your profile (${profile.level || 'unspecified level'}, goal: ${profile.trainingGoal || 'general fitness'}), I'd normally build you a specific session around: "${userText.slice(0, 80)}".
-
-Try a prompt like "push day" or "warmup" to see a real canned example. When this is deployed as a Claude Artifact, every reply will come live from Claude.`;
-  }
-
-  /* ------------------------------------------------------------
-     Real Claude API call. Builds messages[] from our local state,
-     attaches a system prompt tuned to the user's profile, and hits
-     /v1/messages. No API key — the Claude artifact sandbox injects
-     it at runtime. When this app is hosted elsewhere the call fails
-     at CORS and we fall through to cannedReply() above.
-     ------------------------------------------------------------ */
-  async function callClaude({ messages, profile }) {
-    const systemPrompt = [
-      "You are SpotMe Coach — a concise, friendly AI personal trainer and fitness companion inside the SpotMe app.",
-      "You write in clear, encouraging language, use short paragraphs, and use bullet lists or numbered steps when prescribing workouts.",
-      "Always tailor recommendations to the user's profile below. If the user asks something unrelated to fitness or wellbeing, answer briefly and steer back to their training.",
-      "",
-      "User profile:",
-      `- Name: ${profile.firstName || 'Athlete'} ${profile.lastName || ''}`.trim(),
-      `- Experience level: ${profile.level || 'unspecified'}`,
-      `- Weight: ${profile.weight ? `${profile.weight} ${profile.weightUnit}` : 'unspecified'}`,
-      `- Height: ${profile.height ? `${profile.height} ${profile.heightUnit}` : 'unspecified'}`,
-      profile.playsSport === 'Yes' && profile.sportName ? `- Plays: ${profile.sportName}` : null,
-      profile.trainingGoal ? `- Primary training goal: ${profile.trainingGoal}` : null
-    ].filter(Boolean).join('\n');
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: messages.map(m => ({ role: m.role, content: m.content }))
-      })
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`API error (${response.status}): ${text.slice(0, 200)}`);
-    }
-    const data = await response.json();
-    const text = (data.content || [])
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('\n');
-    return text || '(No response.)';
-  }
-
-  /* ------------------------------------------------------------
      The page itself.
      ------------------------------------------------------------ */
   function ChatPage({ profile, onSessionEnd }) {
@@ -412,6 +271,7 @@ Try a prompt like "push day" or "warmup" to see a real canned example. When this
     const [attachments, setAttachments] = useState([]);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState(null);
+    const [sessionId, setSessionId] = useState(null);
     const threadRef = useRef(null);
 
     const empty = messages.length === 0;
@@ -440,26 +300,30 @@ Try a prompt like "push day" or "warmup" to see a real canned example. When this
 
     const send = useCallback(async (text) => {
       if (sending) return;
-      const nextMessages = [...messages, { role: 'user', content: text }];
-      setMessages(nextMessages);
+      // Pull the dataUrl from the first image attachment, if any.
+      const imageDataUrl = (attachments.find(a => a.dataUrl) || {}).dataUrl || undefined;
+      setMessages(m => [...m, { role: 'user', content: text }]);
       setInput('');
       setAttachments([]);
       setSending(true);
       setError(null);
-      try {
-        const reply = await callClaude({ messages: nextMessages, profile });
-        setMessages(m => [...m, { role: 'assistant', content: reply }]);
-      } catch (e) {
-        // Live API unreachable (CORS, offline, no key, etc.) — use the
-        // keyword-matched canned-reply library so the chat is still
-        // functional as a demo.
-        console.warn('Live API unavailable, using canned reply:', e.message);
-        const reply = cannedReply(text, profile);
-        setMessages(m => [...m, { role: 'assistant', content: reply }]);
-      } finally {
-        setSending(false);
+      const r = await SpotMe.api.chat({
+        sessionId: sessionId || undefined,
+        message: text,
+        imageDataUrl
+      });
+      setSending(false);
+      if (!r.ok) {
+        setError(r.error || 'Something went wrong. Please try again.');
+        return;
       }
-    }, [messages, profile, sending]);
+      // Persist the session ID for all subsequent turns in this conversation.
+      if (r.data && r.data.sessionId) {
+        setSessionId(r.data.sessionId);
+      }
+      const reply = (r.data && r.data.reply) || '(No response.)';
+      setMessages(m => [...m, { role: 'assistant', content: reply }]);
+    }, [attachments, messages, sending, sessionId]);
 
     const addAttachment = (a) => setAttachments(prev => [...prev, a]);
     const removeAttachment = (i) => setAttachments(prev => prev.filter((_, idx) => idx !== i));
