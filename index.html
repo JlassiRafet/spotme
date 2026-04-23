@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotMe</title>
+
+  <!-- Fonts: Anthropic Sans falls through to Inter (publicly licensed stand-in). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Anthropic Sans"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- React + Babel (standalone, in-browser transpile) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="min-h-screen overflow-x-hidden bg-[#060912] text-[#ecf2ff]">
+  <!-- Decorative background layers (visible only on auth pages; logged-in app has its own bg) -->
+  <div class="auth-bg-base" aria-hidden="true"></div>
+  <div class="auth-bg-glow" aria-hidden="true">
+    <span class="star star-1"></span>
+    <span class="star star-2"></span>
+    <span class="star star-3"></span>
+    <span class="star star-4"></span>
+    <span class="halo"></span>
+    <span class="blob blob-left"></span>
+    <span class="blob blob-right"></span>
+  </div>
+
+  <div id="root"></div>
+
+  <!--
+    Load order matters: lower-level modules register themselves onto
+    window.SpotMe first; App.jsx (the root) reads from window.SpotMe last.
+  -->
+  <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/api.js"></script>
+  <script type="text/babel" data-presets="react" src="src/primitives.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/UnderDev.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/HomePage.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/AuthCard.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/HistoryPage.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/ProfilePage.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/ChatPage.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/AppShell.jsx"></script>
+  <script type="text/babel" data-presets="react" src="App.jsx"></script>
+</body>
+</html>
