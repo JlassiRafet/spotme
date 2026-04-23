@@ -273,8 +273,8 @@
     const [sending, setSending] = useState(false);
     const [loadingSession, setLoadingSession] = useState(false);
     const [error, setError] = useState(null);
-    const [sessionId, setSessionId] = useState(null);
     const threadRef = useRef(null);
+    const abortRef = useRef(null);
 
     const empty = messages.length === 0 && !loadingSession;
 
@@ -315,32 +315,57 @@
       if (el) el.scrollTop = el.scrollHeight;
     }, [messages, sending, loadingSession]);
 
-    const send = useCallback(async (text) => {
+    const send = useCallback((text) => {
       if (sending) return;
-      // Pull the dataUrl from the first image attachment, if any.
       const imageDataUrl = (attachments.find(a => a.dataUrl) || {}).dataUrl || undefined;
       setMessages(m => [...m, { role: 'user', content: text }]);
       setInput('');
       setAttachments([]);
       setSending(true);
       setError(null);
-      const r = await SpotMe.api.chat({
+
+      // Append a placeholder assistant message we'll stream into.
+      setMessages(m => [...m, { role: 'assistant', content: '', streaming: true }]);
+
+      const ctrl = SpotMe.api.streamChat({
         sessionId: sessionId || undefined,
         message: text,
-        imageDataUrl
+        imageDataUrl,
+        onSession: (id) => setSessionId(id),
+        onChunk: (delta) => {
+          setMessages(m => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last && last.streaming) {
+              copy[copy.length - 1] = { ...last, content: last.content + delta };
+            }
+            return copy;
+          });
+        },
+        onDone: () => {
+          setMessages(m => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last && last.streaming) {
+              copy[copy.length - 1] = { ...last, streaming: false };
+            }
+            return copy;
+          });
+          setSending(false);
+        },
+        onError: (msg) => {
+          // Remove the empty streaming bubble, show error banner.
+          setMessages(m => {
+            const copy = [...m];
+            if (copy[copy.length - 1]?.streaming) copy.pop();
+            return copy;
+          });
+          setError(msg || 'Something went wrong. Please try again.');
+          setSending(false);
+        }
       });
-      setSending(false);
-      if (!r.ok) {
-        setError(r.error || 'Something went wrong. Please try again.');
-        return;
-      }
-      // Persist the session ID for all subsequent turns in this conversation.
-      if (r.data && r.data.sessionId) {
-        setSessionId(r.data.sessionId);
-      }
-      const reply = (r.data && r.data.reply) || '(No response.)';
-      setMessages(m => [...m, { role: 'assistant', content: reply }]);
-    }, [attachments, messages, sending, sessionId]);
+      abortRef.current = ctrl;
+    }, [attachments, sending, sessionId]);
 
     const addAttachment = (a) => setAttachments(prev => [...prev, a]);
     const removeAttachment = (i) => setAttachments(prev => prev.filter((_, idx) => idx !== i));
@@ -384,11 +409,8 @@
           <>
             <div className="chat-thread" ref={threadRef}>
               {messages.map((m, i) => (
-                <Message key={i} role={m.role} content={m.content} />
+                <Message key={i} role={m.role} content={m.content} streaming={!!m.streaming} />
               ))}
-              {sending && (
-                <Message role="assistant" content="Thinking…" streaming />
-              )}
               {error && (
                 <div className="chat-error">{error}</div>
               )}

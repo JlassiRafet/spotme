@@ -147,3 +147,106 @@ chatRoutes.post('/', requireAuth, handler(async (req, res) => {
     messageId: Number(info.lastInsertRowid)
   });
 }));
+
+/* ---------- POST /api/chat/stream — SSE streaming ---------- */
+
+chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
+  const message = (req.body.message || '').trim();
+  const imageDataUrl = req.body.imageDataUrl || null;
+
+  if (!message && !imageDataUrl) throw new ApiError(400, 'Message or image is required.');
+  if (message.length > 4000)      throw new ApiError(400, 'Message is too long (max 4000 chars).');
+
+  /* ---- resolve or create session ---- */
+  let sessionId = Number(req.body.sessionId) || null;
+  if (sessionId) {
+    const sess = stmts.getSession.get(sessionId, req.user.id);
+    if (!sess) throw new ApiError(404, 'Conversation not found.');
+  } else {
+    const title = message.slice(0, 60) || 'New conversation';
+    const info = stmts.createSession.run(req.user.id, title, '');
+    sessionId = Number(info.lastInsertRowid);
+  }
+
+  /* ---- store the user message ---- */
+  stmts.insertMessage.run({
+    session_id:      sessionId,
+    role:            'user',
+    content:         message,
+    image_data_url:  imageDataUrl,
+    structured_json: null
+  });
+
+  /* ---- build messages array ---- */
+  const history = stmts.listMessages.all(sessionId);
+  const systemPrompt = buildSystemPrompt(req.user);
+  const hasAnyImage = history.some(m => m.image_data_url);
+  const model = hasAnyImage ? VISION_MODEL : CHAT_MODEL;
+
+  const messages = [{ role: 'system', content: systemPrompt }];
+  for (const m of history) {
+    if (m.image_data_url && m.role === 'user') {
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'text', text: m.content || 'What is this?' },
+          { type: 'image_url', image_url: { url: m.image_data_url } }
+        ]
+      });
+    } else {
+      messages.push({ role: m.role, content: m.content });
+    }
+  }
+
+  /* ---- SSE headers ---- */
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
+  /* ---- send sessionId first so the client can persist it ---- */
+  send('session', { sessionId });
+
+  /* ---- stream from Groq ---- */
+  let replyText = '';
+  try {
+    const stream = await groq.chat.completions.create({
+      model,
+      messages,
+      max_tokens: 800,
+      temperature: 0.6,
+      stream: true
+    });
+    for await (const chunk of stream) {
+      const delta = chunk.choices?.[0]?.delta?.content;
+      if (delta) {
+        replyText += delta;
+        send('chunk', { text: delta });
+      }
+    }
+  } catch (e) {
+    console.error('[spotme] Groq stream failed:', e?.status, e?.message || e);
+    const status = e?.status;
+    if (status === 401) send('error', { message: 'Server misconfigured — check GROQ_API_KEY.' });
+    else if (status === 429) send('error', { message: "Rate limited. Give me a minute." });
+    else if (status === 413) send('error', { message: 'Image too large for vision model.' });
+    else send('error', { message: "Can't reach AI right now. Try again." });
+    res.end();
+    return;
+  }
+
+  /* ---- store assistant reply ---- */
+  const info = stmts.insertMessage.run({
+    session_id:      sessionId,
+    role:            'assistant',
+    content:         replyText || '(Empty reply.)',
+    image_data_url:  null,
+    structured_json: null
+  });
+  stmts.touchSession.run(sessionId);
+
+  send('done', { messageId: Number(info.lastInsertRowid) });
+  res.end();
+}));

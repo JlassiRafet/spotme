@@ -152,6 +152,63 @@
     });
   }
 
+  // Streaming variant. Calls onChunk(text) for each delta,
+  // onSession(id) when the sessionId arrives, onDone() when finished,
+  // onError(msg) on failure. Returns an AbortController so the caller
+  // can cancel early.
+  function streamChat({ sessionId, message, imageDataUrl, onChunk, onSession, onDone, onError }) {
+    const ctrl = new AbortController();
+    const token = getToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    fetch(BASE + '/api/chat/stream', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ sessionId, message, imageDataUrl }),
+      signal: ctrl.signal
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        let msg = 'Something went wrong.';
+        try { msg = JSON.parse(text)?.error || msg; } catch {}
+        onError && onError(msg);
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const parts = buf.split('\n\n');
+        buf = parts.pop();
+        for (const part of parts) {
+          const lines = part.trim().split('\n');
+          let event = 'message', data = '';
+          for (const line of lines) {
+            if (line.startsWith('event: ')) event = line.slice(7);
+            else if (line.startsWith('data: ')) data = line.slice(6);
+          }
+          if (!data) continue;
+          try {
+            const payload = JSON.parse(data);
+            if (event === 'chunk')   onChunk   && onChunk(payload.text);
+            if (event === 'session') onSession && onSession(payload.sessionId);
+            if (event === 'done')    onDone    && onDone();
+            if (event === 'error')   onError   && onError(payload.message || 'Unknown error.');
+          } catch {}
+        }
+      }
+    }).catch((e) => {
+      if (e?.name === 'AbortError') return;
+      onError && onError("Can't reach the server.");
+    });
+
+    return ctrl;
+  }
+
   function identify({ sessionId, imageDataUrl }) {
     return request('/api/identify', {
       method: 'POST',
@@ -197,7 +254,7 @@
     // auth
     signup, login, logout, me,
     // chat
-    chat, identify,
+    chat, streamChat, identify,
     // history
     listSessions, getSession, deleteSession,
     // profile
