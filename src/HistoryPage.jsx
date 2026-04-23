@@ -1,18 +1,18 @@
 /* ============================================================
    SpotMe — History page
-   Lists past chat sessions fetched from the backend.
-   Allows reopening a session by clicking the Open button.
+   Tag filter + sort + clickable cards.
    ============================================================ */
 
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
   const { useState, useEffect } = React;
-  const { HistoryIcon, SparkleIcon } = SpotMe.icons;
+  const { HistoryIcon, SparkleIcon, PlusIcon } = SpotMe.icons;
 
-  /* Returns a human-readable relative time string, e.g. "2h ago". */
-  function relativeTime(dateString) {
-    if (!dateString) return '';
-    const diff = Date.now() - new Date(dateString).getTime();
+  const TAG_OPTIONS = ['All', 'Legs', 'Biceps', 'Chest', 'Back', 'Shoulders', 'Arms', 'Upper Body', 'Lower Body', 'Full Body', 'Cardio'];
+
+  function relativeTime(dateVal) {
+    if (!dateVal) return '';
+    const diff = Date.now() - new Date(dateVal).getTime();
     const secs = Math.floor(diff / 1000);
     if (secs < 60) return 'just now';
     const mins = Math.floor(secs / 60);
@@ -30,6 +30,8 @@
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState(null);
+    const [activeTag, setActiveTag] = useState('All');
+    const [sortOrder, setSortOrder] = useState('newest');
 
     useEffect(() => {
       let cancelled = false;
@@ -38,18 +40,13 @@
       SpotMe.api.listSessions()
         .then(res => {
           if (cancelled) return;
-          if (res.ok) {
-            setSessions(res.data.sessions || []);
-          } else {
-            setFetchError('Could not load sessions. Please try again later.');
-          }
+          if (res.ok) setSessions(res.data.sessions || []);
+          else setFetchError('Could not load sessions. Please try again later.');
         })
         .catch(() => {
           if (!cancelled) setFetchError('Could not reach the server. Check your connection.');
         })
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
+        .finally(() => { if (!cancelled) setLoading(false); });
       return () => { cancelled = true; };
     }, []);
 
@@ -89,29 +86,70 @@
       );
     }
 
+    const filtered = sessions
+      .filter(s => {
+        if (activeTag === 'All') return true;
+        return (s.tags || []).some(t => t.toLowerCase() === activeTag.toLowerCase());
+      })
+      .sort((a, b) => {
+        const diff = new Date(b.updatedAt) - new Date(a.updatedAt);
+        return sortOrder === 'newest' ? diff : -diff;
+      });
+
     return (
       <div className="history-page">
-        <p className="history-hint">Your recent conversations. Click Open to continue one.</p>
-        <ul className="history-list">
-          {sessions.map((session) => (
-            <li key={session.id} className="history-item liquid">
-              <div className="history-item-title">{session.title || 'Untitled chat'}</div>
-              <div className="history-item-meta">
-                {session.tags && session.tags.length > 0
-                  ? session.tags.join(', ') + ' · '
-                  : ''}
-                {relativeTime(session.updatedAt)}
-              </div>
-              <button
-                type="button"
-                className="profile-row-btn"
-                onClick={() => onOpenChat(session)}
-              >
-                Open
-              </button>
-            </li>
+        <div className="history-header">
+          <h2 className="history-title">History</h2>
+          <div className="history-header-actions">
+            <button type="button" className="history-sort-btn"
+                    onClick={() => setSortOrder(v => v === 'newest' ? 'oldest' : 'newest')}>
+              {sortOrder === 'newest' ? '↓ Newest' : '↑ Oldest'}
+            </button>
+            <button type="button" className="profile-row-btn primary"
+                    onClick={() => onOpenChat(null)}>
+              <PlusIcon /> <span>New Thread</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="history-tag-filters">
+          {TAG_OPTIONS.map(tag => (
+            <button key={tag} type="button"
+                    className={`history-tag-chip${activeTag === tag ? ' is-active' : ''}`}
+                    onClick={() => setActiveTag(tag)}>
+              {tag}
+            </button>
           ))}
-        </ul>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="history-empty" style={{ margin: '32px auto' }}>
+            <h2>No sessions for "{activeTag}"</h2>
+            <p>Try a different filter or start a new conversation.</p>
+            <button type="button" className="profile-row-btn" onClick={() => setActiveTag('All')}>
+              Show all
+            </button>
+          </div>
+        ) : (
+          <div className="history-cards">
+            {filtered.map(session => (
+              <div key={session.id} className="history-card"
+                   role="button" tabIndex={0}
+                   onClick={() => onOpenChat(session)}
+                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenChat(session); } }}>
+                <div className="history-card-title">{session.title || 'Untitled chat'}</div>
+                <div className="history-card-meta">
+                  {(session.tags || []).length > 0 && (
+                    <div className="history-card-tags">
+                      {session.tags.map(t => <span key={t} className="history-card-tag">{t}</span>)}
+                    </div>
+                  )}
+                  <span className="history-card-time">{relativeTime(session.updatedAt)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

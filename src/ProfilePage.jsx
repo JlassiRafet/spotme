@@ -256,9 +256,6 @@
 
         {/* --------- Danger Zone --------- */}
         <section className="profile-section">
-          <h2 className="profile-section-title" style={{ color: 'var(--color-error, #ff5555)' }}>
-            Danger Zone
-          </h2>
           <div className="profile-divider" />
           <div className="profile-row">
             <div className="profile-row-info">

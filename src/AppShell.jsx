@@ -89,7 +89,7 @@
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
-          <span>All settings</span>
+          <span>Account</span>
         </button>
         {profile.subscription !== 'pro' && (
           <button type="button" role="menuitem" className="profile-menu-item"
@@ -136,6 +136,7 @@
     const [restoredSession, setRestoredSession] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [sidebarSessions, setSidebarSessions] = useState([]);
+    const [historyExpanded, setHistoryExpanded] = useState(true);
 
     const loadSidebarSessions = useCallback(() => {
       SpotMe.api.listSessions().then(r => {
@@ -183,28 +184,47 @@
             <SidebarItem icon={<HomeIcon />} label="Chat"
                          active={page === 'chat'}
                          onClick={() => setPage('chat')} />
-            <SidebarItem icon={<HistoryIcon />} label="History"
-                         active={page === 'history'}
-                         onClick={() => { loadSidebarSessions(); setPage('history'); }} />
+
+            <div className="sidebar-history-group">
+              <div className="sidebar-history-header">
+                <button type="button"
+                        className={`sidebar-history-btn${page === 'history' ? ' is-active' : ''}`}
+                        onClick={() => { loadSidebarSessions(); setPage('history'); }}>
+                  <span className="sidebar-icon"><HistoryIcon /></span>
+                  <span className="sidebar-label">History</span>
+                </button>
+                {sidebarSessions.length > 0 && (
+                  <button type="button"
+                          className={`sidebar-chevron-btn${historyExpanded ? ' is-expanded' : ''}`}
+                          onClick={() => setHistoryExpanded(v => !v)}
+                          aria-label={historyExpanded ? 'Collapse history' : 'Expand history'}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                         strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+              {historyExpanded && sidebarSessions.length > 0 && (
+                <div className="sidebar-sessions">
+                  {sidebarSessions.slice(0, 12).map(s => (
+                    <button key={s.id} type="button" className="sidebar-session-item"
+                            onClick={() => {
+                              setRestoredSession(s);
+                              setChatSessionId(id => id + 1);
+                              setPage('chat');
+                            }}>
+                      <span className="sidebar-session-title">{s.title}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <SidebarItem icon={<TrackerIcon />} label="Tracker"
                          active={page === 'tracker'}
                          onClick={() => setPage('tracker')} />
           </nav>
-
-          {sidebarSessions.length > 0 && (
-            <div className="sidebar-sessions">
-              {sidebarSessions.slice(0, 12).map(s => (
-                <button key={s.id} type="button" className="sidebar-session-item"
-                        onClick={() => {
-                          setRestoredSession(s);
-                          setChatSessionId(id => id + 1);
-                          setPage('chat');
-                        }}>
-                  <span className="sidebar-session-title">{s.title}</span>
-                </button>
-              ))}
-            </div>
-          )}
 
           <div className="app-sidebar-profile">
             <div className="profile-chip-wrap">
