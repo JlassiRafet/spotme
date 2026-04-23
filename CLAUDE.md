@@ -59,9 +59,12 @@ Format for copy-paste into new chat.
 - `src/ChatPage.jsx` — main chat UI
 - `src/AuthCard.jsx` — login + 2-step signup
 
-## Known Issues / Next Work
-- ChatPage has legacy direct Anthropic API call — needs removal
-- Upgrade/payment flow returns 501 — not implemented
-- History page: re-open sessions not wired up
-- Tracker page: placeholder only
-- No streaming responses yet
+## Done
+- ChatPage wired to api.js (Groq via server) ✓
+- History page fetches real sessions, reopen works ✓
+
+## Next Work
+- Streaming responses (SSE backend + frontend)
+- Upgrade/payment flow (501 stub)
+- Tracker page (placeholder only)
+- Auth persistence on refresh (check token via /api/auth/me on load)
