@@ -83,15 +83,12 @@
     const [chatSessionId, setChatSessionId] = useState(0);
     const [bellEnabled, setBellEnabled] = useState(true);
     const [hasUnread, setHasUnread] = useState(true);
-    const [history, setHistory] = useState([]); // past chat sessions
+    const [restoredSession, setRestoredSession] = useState(null);
 
     const startNewChat = useCallback(() => {
+      setRestoredSession(null);
       setChatSessionId(id => id + 1);
       setPage('chat');
-    }, []);
-
-    const appendHistory = useCallback((entry) => {
-      setHistory(h => [entry, ...h].slice(0, 50));
     }, []);
 
     const toggleBell = useCallback(() => {
@@ -173,7 +170,7 @@
             {page === 'chat' && SpotMe.ChatPage && (
               <SpotMe.ChatPage key={chatSessionId}
                                profile={profile}
-                               onSessionEnd={appendHistory} />
+                               initialSession={restoredSession} />
             )}
             {page === 'profile' && SpotMe.ProfilePage && (
               <SpotMe.ProfilePage profile={profile}
@@ -184,8 +181,13 @@
                                body="Progress tracking is part of SpotMe Pro. Upgrade to unlock weekly trends, PR charts, and goal streaks." />
             )}
             {page === 'history' && SpotMe.HistoryPage && (
-              <SpotMe.HistoryPage history={history}
-                                  onOpenChat={() => setPage('chat')} />
+              <SpotMe.HistoryPage
+                onOpenChat={(session) => {
+                  setRestoredSession(session || null);
+                  setChatSessionId(id => id + 1);
+                  setPage('chat');
+                }}
+              />
             )}
           </section>
         </div>

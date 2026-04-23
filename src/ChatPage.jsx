@@ -265,38 +265,55 @@
   /* ------------------------------------------------------------
      The page itself.
      ------------------------------------------------------------ */
-  function ChatPage({ profile, onSessionEnd }) {
+  function ChatPage({ profile, initialSession }) {
     const [messages, setMessages] = useState([]);
+    const [sessionId, setSessionId] = useState(null);
     const [input, setInput] = useState('');
     const [attachments, setAttachments] = useState([]);
     const [sending, setSending] = useState(false);
+    const [loadingSession, setLoadingSession] = useState(false);
     const [error, setError] = useState(null);
     const [sessionId, setSessionId] = useState(null);
     const threadRef = useRef(null);
 
-    const empty = messages.length === 0;
+    const empty = messages.length === 0 && !loadingSession;
+
+    // Restore a previous session on mount if initialSession is provided
+    useEffect(() => {
+      if (!initialSession) return;
+      let cancelled = false;
+      setLoadingSession(true);
+      setError(null);
+      SpotMe.api.getSession(initialSession.id)
+        .then(res => {
+          if (cancelled) return;
+          if (res.ok) {
+            setSessionId(res.data.session.id || initialSession.id);
+            setMessages(
+              (res.data.messages || []).map(m => ({
+                role: m.role,
+                content: m.content
+              }))
+            );
+          } else {
+            setError('Could not load the session. Starting fresh.');
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setError('Could not reach the server. Starting fresh.');
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingSession(false);
+        });
+      return () => { cancelled = true; };
+    // eslint-disable-next-line
+    }, []);
 
     // Scroll to bottom on new message
     useEffect(() => {
       const el = threadRef.current;
       if (el) el.scrollTop = el.scrollHeight;
-    }, [messages, sending]);
-
-    // When the chat unmounts (new chat / page change), save history
-    useEffect(() => {
-      return () => {
-        if (messages.length > 0 && onSessionEnd) {
-          const firstUser = messages.find(m => m.role === 'user');
-          onSessionEnd({
-            title: (firstUser?.content || 'Untitled').slice(0, 60),
-            preview: (messages[messages.length - 1]?.content || '').slice(0, 120),
-            messageCount: messages.length,
-            when: 'Just now'
-          });
-        }
-      };
-      // eslint-disable-next-line
-    }, []);
+    }, [messages, sending, loadingSession]);
 
     const send = useCallback(async (text) => {
       if (sending) return;
@@ -330,7 +347,15 @@
 
     return (
       <div className="chat-page">
-        {empty ? (
+        {loadingSession ? (
+          <div className="chat-empty">
+            <div className="chat-empty-brand">
+              <SpotMeLogo size={44} />
+              <h1 className="chat-empty-title">spotme <span>coach</span></h1>
+            </div>
+            <p style={{ textAlign: 'center', opacity: 0.6 }}>Loading session…</p>
+          </div>
+        ) : empty ? (
           <div className="chat-empty">
             <div className="chat-empty-brand">
               <SpotMeLogo size={44} />
