@@ -191,7 +191,7 @@ export const stmts = {
   cleanExpiredTokens: prep('DELETE FROM auth_tokens WHERE expires_at < unixepoch()'),
 
   createSession:      prep('INSERT INTO chat_sessions (user_id, title, tags) VALUES (?, ?, ?)'),
-  listSessions:       prep('SELECT id, title, tags, created_at, updated_at FROM chat_sessions WHERE user_id = ? ORDER BY updated_at DESC'),
+  listSessions:       prep('SELECT cs.id, cs.title, cs.tags, cs.created_at, cs.updated_at, (SELECT content FROM messages WHERE session_id = cs.id AND role = \'user\' ORDER BY id ASC LIMIT 1) as preview FROM chat_sessions cs WHERE cs.user_id = ? ORDER BY cs.updated_at DESC'),
   getSession:         prep('SELECT * FROM chat_sessions WHERE id = ? AND user_id = ?'),
   updateSessionMeta:  prep('UPDATE chat_sessions SET title = ?, tags = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?'),
   touchSession:       prep('UPDATE chat_sessions SET updated_at = unixepoch() WHERE id = ?'),

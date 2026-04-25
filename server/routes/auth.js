@@ -119,10 +119,14 @@ authRoutes.post('/login', handler(async (req, res) => {
   }
 
   const user = stmts.getUserByEmail.get(email);
-  // Always run bcrypt even on a missing user, so timing doesn't leak whether
-  // an email exists. Compare against a dummy hash if user is null.
-  const hash = user ? user.password_hash : '$2a$11$0000000000000000000000000000000000000000000000000000';
+  // Always run bcrypt even on a missing user (or OAuth-only user with no password_hash)
+  // so timing doesn't reveal whether the email exists.
+  const hash = (user && user.password_hash) ? user.password_hash : '$2a$11$0000000000000000000000000000000000000000000000000000';
   const ok = await bcrypt.compare(password, hash);
+  // OAuth-only accounts have empty password_hash — block password login for them
+  if (user && !user.password_hash && ok === false) {
+    throw new ApiError(401, 'This account uses Google Sign-In. Use the Google button to sign in.');
+  }
 
   if (!user || !ok) throw new ApiError(401, 'Email or password is incorrect.');
 
@@ -152,3 +156,84 @@ authRoutes.delete('/account', requireAuth, handler((req, res) => {
   stmts.deleteUser.run(req.user.id);
   res.json({ ok: true });
 }));
+
+/* ---------- GET /api/auth/google (initiate OAuth) ---------- */
+
+authRoutes.get('/google', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId || clientId === 'REPLACE_ME') {
+    return res.status(503).send('Google Sign-In is not configured on this server.');
+  }
+  const base = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 8787}`;
+  const params = new URLSearchParams({
+    client_id:     clientId,
+    redirect_uri:  `${base}/api/auth/google/callback`,
+    response_type: 'code',
+    scope:         'openid email profile',
+    access_type:   'offline',
+    prompt:        'select_account'
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+});
+
+/* ---------- GET /api/auth/google/callback ---------- */
+
+authRoutes.get('/google/callback', async (req, res) => {
+  const base     = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 8787}`;
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const secret   = process.env.GOOGLE_CLIENT_SECRET;
+  const { code, error } = req.query;
+
+  if (error || !code) return res.redirect(`${base}/?auth_error=cancelled`);
+
+  try {
+    // Exchange auth code for access token
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    new URLSearchParams({
+        code,
+        client_id:     clientId,
+        client_secret: secret,
+        redirect_uri:  `${base}/api/auth/google/callback`,
+        grant_type:    'authorization_code'
+      })
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) return res.redirect(`${base}/?auth_error=token_failed`);
+
+    // Get Google user info
+    const userRes  = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const gUser = await userRes.json();
+    if (!gUser.email) return res.redirect(`${base}/?auth_error=no_email`);
+
+    const email = gUser.email.toLowerCase();
+
+    // Find or create local user
+    let user = stmts.getUserByEmail.get(email);
+    if (!user) {
+      const nameParts  = (gUser.name || '').split(' ');
+      const firstName  = gUser.given_name  || nameParts[0]               || 'User';
+      const lastName   = gUser.family_name || nameParts.slice(1).join(' ')|| '';
+      const info = stmts.insertUser.run({
+        email, password_hash: '',
+        first_name: firstName, last_name: lastName,
+        country_code: null, phone: null, level: null,
+        weight: null, weight_unit: null, height: null, height_unit: null,
+        plays_sport: null, sport_name: null, training_goal: null
+      });
+      user = stmts.getUserById.get(info.lastInsertRowid);
+    }
+
+    const token   = newToken();
+    const expires = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS;
+    stmts.insertToken.run(token, user.id, expires);
+
+    res.redirect(`${base}/?token=${token}`);
+  } catch (err) {
+    console.error('[spotme] Google OAuth error:', err);
+    res.redirect(`${base}/?auth_error=server_error`);
+  }
+});

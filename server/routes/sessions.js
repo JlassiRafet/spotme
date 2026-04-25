@@ -24,6 +24,7 @@ sessionRoutes.get('/', requireAuth, handler((req, res) => {
       id:        r.id,
       title:     r.title,
       tags:      r.tags ? r.tags.split(',').filter(Boolean) : [],
+      preview:   r.preview ? r.preview.slice(0, 120) : null,
       createdAt: r.created_at * 1000,
       updatedAt: r.updated_at * 1000
     }))
@@ -58,6 +59,22 @@ sessionRoutes.get('/:id', requireAuth, handler((req, res) => {
     },
     messages: msgs
   });
+}));
+
+/* ---------- PATCH /api/sessions/:id (rename) ---------- */
+
+sessionRoutes.patch('/:id', requireAuth, handler((req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Invalid session id.');
+
+  const title = (req.body.title || '').trim().slice(0, 120);
+  if (!title) throw new ApiError(400, 'Title is required.');
+
+  const session = stmts.getSession.get(id, req.user.id);
+  if (!session) throw new ApiError(404, 'Conversation not found.');
+
+  stmts.updateSessionMeta.run(title, session.tags || '', id, req.user.id);
+  res.json({ ok: true, title });
 }));
 
 /* ---------- DELETE /api/sessions/:id ---------- */

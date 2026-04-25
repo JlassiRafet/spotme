@@ -10,7 +10,7 @@
   const SpotMe = (window.SpotMe = window.SpotMe || {});
   const { useState, useEffect, useRef, useCallback } = React;
   const {
-    SpotMeLogo, PlusIcon, MicIcon, SendIcon, ChevronIcon,
+    SpotMeLogo, PlusIcon, MicIcon, SendIcon,
     CameraIcon, ImageIcon, ArrowLeftIcon, ArrowRightIcon
   } = SpotMe.icons;
 
@@ -266,14 +266,8 @@
         <div className="chat-input-row">
           <div className="chat-input-left">
             <PlusMenu onAttach={onAttach} />
-            <button type="button" className="model-pill" aria-label="Model">
-              <span className="model-pill-dot" />
-              <span>SpotMe Coach</span>
-              <ChevronIcon />
-            </button>
           </div>
           <div className="chat-input-right">
-            <span className="model-name">SpotMe Coach 1.0</span>
             <button type="button" className="icon-btn" aria-label="Voice input" title="Voice (coming soon)">
               <MicIcon />
             </button>
@@ -292,8 +286,18 @@
 
   /* ------------------------------------------------------------
      Message — a single user or assistant bubble.
+     Renders assistant content as markdown once streaming is done.
      ------------------------------------------------------------ */
   function Message({ role, content, streaming }) {
+    const { useMemo } = React;
+
+    const html = useMemo(() => {
+      if (!content || streaming || !window.marked) return null;
+      try {
+        return window.marked.parse(content, { breaks: true, gfm: true });
+      } catch { return null; }
+    }, [content, streaming]);
+
     if (role === 'user') {
       return (
         <div className="msg msg-user">
@@ -306,10 +310,15 @@
         <div className="msg-avatar"><SpotMeLogo size={26} /></div>
         <div className="msg-body">
           <div className="msg-role">SpotMe Coach</div>
-          <div className="msg-content">
-            {content}
-            {streaming && <span className="msg-cursor" />}
-          </div>
+          {html ? (
+            <div className="msg-content md-content"
+                 dangerouslySetInnerHTML={{ __html: html }} />
+          ) : (
+            <div className="msg-content">
+              {content}
+              {streaming && <span className="msg-cursor" />}
+            </div>
+          )}
         </div>
       </div>
     );

@@ -8,7 +8,7 @@
   const { useState, useEffect, useCallback, useRef } = React;
   const {
     SpotMeLogo, PlusIcon, HistoryIcon, TrackerIcon, BellIcon,
-    HomeIcon, LogoutIcon, CrownIcon
+    LogoutIcon, CrownIcon
   } = SpotMe.icons;
 
   function Avatar({ profile, size = 32, showPro = true }) {
@@ -128,6 +128,108 @@
     );
   }
 
+  /* Mobile slide-in drawer */
+  function MobileDrawer({ profile, page, onNavigate, onLogout, onNewChat, onClose,
+                           sessions, historyExpanded, setHistoryExpanded, loadSessions }) {
+    const drawerRef = useRef(null);
+    const displayName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
+
+    useEffect(() => {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }, []);
+
+    function nav(p) { onNavigate(p); onClose(); }
+
+    return (
+      <>
+        <div className="mobile-overlay" onClick={onClose} aria-hidden="true" />
+        <div className="mobile-drawer" ref={drawerRef} role="dialog" aria-modal="true" aria-label="Menu">
+          {/* Header */}
+          <div className="mobile-drawer-header">
+            <SpotMeLogo size={26} />
+            <button type="button" className="mobile-drawer-close" onClick={onClose} aria-label="Close menu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                   strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Profile chip */}
+          <div className="mobile-drawer-profile">
+            <Avatar profile={profile} size={40} />
+            <div style={{ minWidth: 0 }}>
+              <div className="profile-chip-name">{displayName}</div>
+              <div style={{ fontSize: '0.75rem', color: '#5c7aa8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.email}</div>
+            </div>
+          </div>
+
+          <div className="mobile-drawer-divider" />
+
+          {/* Nav */}
+          <nav className="mobile-drawer-nav">
+            <button type="button" className="mobile-drawer-item" onClick={() => { onNewChat(); onClose(); }}>
+              <PlusIcon />
+              <span>New chat</span>
+            </button>
+            <button type="button"
+                    className={`mobile-drawer-item${page === 'history' ? ' is-active' : ''}`}
+                    onClick={() => { loadSessions(); nav('history'); }}>
+              <HistoryIcon />
+              <span>History</span>
+            </button>
+            <button type="button"
+                    className={`mobile-drawer-item${page === 'tracker' ? ' is-active' : ''}`}
+                    onClick={() => nav('tracker')}>
+              <TrackerIcon />
+              <span>Tracker</span>
+            </button>
+          </nav>
+
+          {/* Recent sessions */}
+          {sessions.length > 0 && (
+            <>
+              <div className="mobile-drawer-divider" />
+              <div className="mobile-drawer-section-label">Recent</div>
+              <div className="mobile-drawer-sessions">
+                {sessions.slice(0, 8).map(s => (
+                  <button key={s.id} type="button" className="mobile-drawer-session"
+                          onClick={() => { onNavigate('restore', s); onClose(); }}>
+                    <span className="sidebar-session-title">{s.title}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div style={{ flex: 1 }} />
+          <div className="mobile-drawer-divider" />
+
+          {/* Bottom actions */}
+          <div className="mobile-drawer-nav">
+            <button type="button"
+                    className={`mobile-drawer-item${page === 'profile' ? ' is-active' : ''}`}
+                    onClick={() => nav('profile')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                   strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>Account</span>
+            </button>
+            <button type="button" className="mobile-drawer-item mobile-drawer-signout"
+                    onClick={() => { onLogout(); onClose(); }}>
+              <LogoutIcon />
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   function AppShell({ profile, onUpdateProfile, onLogout }) {
     const [page, setPage] = useState('chat');
     const [chatSessionId, setChatSessionId] = useState(0);
@@ -135,6 +237,7 @@
     const [hasUnread, setHasUnread] = useState(true);
     const [restoredSession, setRestoredSession] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [sidebarSessions, setSidebarSessions] = useState([]);
     const [historyExpanded, setHistoryExpanded] = useState(true);
 
@@ -169,6 +272,30 @@
 
     return (
       <div className="app-shell">
+        {/* Mobile slide-in drawer */}
+        {mobileMenuOpen && (
+          <MobileDrawer
+            profile={profile}
+            page={page}
+            onNavigate={(p, session) => {
+              if (p === 'restore' && session) {
+                setRestoredSession(session);
+                setChatSessionId(id => id + 1);
+                setPage('chat');
+              } else {
+                setPage(p);
+              }
+            }}
+            onLogout={onLogout}
+            onNewChat={startNewChat}
+            onClose={() => setMobileMenuOpen(false)}
+            sessions={sidebarSessions}
+            historyExpanded={historyExpanded}
+            setHistoryExpanded={setHistoryExpanded}
+            loadSessions={loadSidebarSessions}
+          />
+        )}
+
         <aside className="app-sidebar">
           <div className="app-sidebar-top">
             <button type="button" className="sidebar-logo-btn"
@@ -181,9 +308,10 @@
           <nav className="app-sidebar-nav">
             <SidebarItem icon={<PlusIcon />} label="New chat"
                          active={false} onClick={startNewChat} />
-            <SidebarItem icon={<HomeIcon />} label="Chat"
-                         active={page === 'chat'}
-                         onClick={() => setPage('chat')} />
+
+            <SidebarItem icon={<TrackerIcon />} label="Tracker"
+                         active={page === 'tracker'}
+                         onClick={() => setPage('tracker')} />
 
             <div className="sidebar-history-group">
               <div className="sidebar-history-header">
@@ -220,10 +348,6 @@
                 </div>
               )}
             </div>
-
-            <SidebarItem icon={<TrackerIcon />} label="Tracker"
-                         active={page === 'tracker'}
-                         onClick={() => setPage('tracker')} />
           </nav>
 
           <div className="app-sidebar-profile">
@@ -255,7 +379,20 @@
 
         <div className="app-main">
           <header className="app-topbar">
+            {/* Hamburger — mobile only */}
+            <button type="button"
+                    className="hamburger-btn"
+                    onClick={() => setMobileMenuOpen(true)}
+                    aria-label="Open menu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                   strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
             <h1 className="app-topbar-title">{pageTitle}</h1>
+            <div className="app-topbar-actions" />
           </header>
 
           <section className="app-body">
@@ -268,6 +405,7 @@
             {page === 'profile' && SpotMe.ProfilePage && (
               <SpotMe.ProfilePage profile={profile}
                                   onUpdateProfile={onUpdateProfile}
+                                  onLogout={onLogout}
                                   onDeleteAccount={async () => {
                                     const r = await SpotMe.api.deleteAccount();
                                     if (r.ok) onLogout();

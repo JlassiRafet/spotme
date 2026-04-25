@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>SpotMe</title>
 
   <!-- Fonts: Anthropic Sans falls through to Inter (publicly licensed stand-in). -->
@@ -29,6 +29,8 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Markdown renderer for AI responses -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 </head>
 <body class="min-h-screen overflow-x-hidden bg-[#060912] text-[#ecf2ff]">
   <!-- Decorative background layers (visible only on auth pages; logged-in app has its own bg) -->

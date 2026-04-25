@@ -13,7 +13,15 @@
       "Bash(git branch *)",
       "Read(//c/Users/Rafet/Documents/spotme-api/**)",
       "Read(//c/Users/Rafet/Documents/spotme-auth/**)",
-      "Bash(git merge feat/streaming --no-ff -m ' *)"
+      "Bash(git merge feat/streaming --no-ff -m ' *)",
+      "Bash(head -30 server.js)",
+      "Bash(head -30 index.js)",
+      "Bash(xargs wc *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('deps:', list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\); print\\('name:', d.get\\('name',''\\)\\)\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(npx -y @playwriter/install-mcp --oauth no \"https://mcp.unframer.co/mcp?id=b6c8f7cc257f887d59fe3dfaf89a49c09ead089bf5a4b8bb0d1fa951b7cff6c8&secret=3Lw6V0rTRso2Bdis476GwU55L3stGuke\")",
+      "Bash(claude mcp *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Rafet\\Documents\\spotme\\.claude",

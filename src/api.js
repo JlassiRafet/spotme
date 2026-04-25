@@ -230,6 +230,9 @@
   function getSession(id) {
     return request(`/api/sessions/${id}`);
   }
+  function renameSession(id, title) {
+    return request(`/api/sessions/${id}`, { method: 'PATCH', body: { title } });
+  }
   function deleteSession(id) {
     return request(`/api/sessions/${id}`, { method: 'DELETE' });
   }
@@ -252,6 +255,29 @@
     return request('/api/health', { auth: false });
   }
 
+  /* ---------- OAuth redirect token handler ---------- */
+  // Google OAuth callback lands at /?token=xxx or /?auth_error=xxx.
+  // Consume both params immediately so they don't persist in the URL.
+  (function handleOAuthRedirect() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      const authError = params.get('auth_error');
+      if (urlToken) {
+        setToken(urlToken);
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token');
+        history.replaceState({}, '', url.toString());
+      }
+      if (authError) {
+        window._spotmeOAuthError = authError;
+        const url = new URL(window.location.href);
+        url.searchParams.delete('auth_error');
+        history.replaceState({}, '', url.toString());
+      }
+    } catch {}
+  })();
+
   /* ---------- expose on window.SpotMe.api ---------- */
 
   SpotMe.api = {
@@ -262,7 +288,7 @@
     // chat
     chat, streamChat, identify,
     // history
-    listSessions, getSession, deleteSession,
+    listSessions, getSession, renameSession, deleteSession,
     // profile
     updateProfile, requestUpgrade,
     // misc

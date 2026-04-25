@@ -12,6 +12,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 
 import { db } from './db.js';
 import { authRoutes }     from './routes/auth.js';
@@ -44,6 +45,8 @@ app.use(cors({
     if (!origin) return cb(null, true);
     if (origins.includes(origin)) return cb(null, true);
     if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
+    // Allow any LAN/private IP — mobile on same WiFi
+    if (/^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true
@@ -91,8 +94,19 @@ app.use((err, _req, res, _next) => {
 
 /* ---------- start ---------- */
 const port = Number(process.env.PORT) || 8787;
-app.listen(port, () => {
-  console.log(`\n[spotme] API + frontend listening on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`\n[spotme] API + frontend listening on port ${port}`);
+  console.log(`[spotme] Local:   http://localhost:${port}`);
+  try {
+    const nets = os.networkInterfaces();
+    for (const ifaces of Object.values(nets)) {
+      for (const iface of ifaces) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          console.log(`[spotme] Network: http://${iface.address}:${port}  ← open on mobile`);
+        }
+      }
+    }
+  } catch {}
   console.log(`[spotme] Chat model:   ${process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile'}`);
   console.log(`[spotme] Vision model: ${process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview'}`);
   console.log(`[spotme] Open http://localhost:${port} in your browser.\n`);
