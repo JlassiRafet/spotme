@@ -65,9 +65,9 @@
         <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
           <defs>
             <linearGradient id="smGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%"  stopColor="#8ab6ff" />
-              <stop offset="55%" stopColor="#5c8cff" />
-              <stop offset="100%" stopColor="#4a72e6" />
+              <stop offset="0%"  stopColor="#ffaa55" />
+              <stop offset="55%" stopColor="#ff6b00" />
+              <stop offset="100%" stopColor="#e65000" />
             </linearGradient>
           </defs>
           <rect x="2" y="2" width="44" height="44" rx="12"

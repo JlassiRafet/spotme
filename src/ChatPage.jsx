@@ -11,7 +11,7 @@
   const { useState, useEffect, useRef, useCallback } = React;
   const {
     SpotMeLogo, PlusIcon, MicIcon, SendIcon,
-    CameraIcon, ImageIcon, ArrowLeftIcon, ArrowRightIcon
+    CameraIcon, ImageIcon
   } = SpotMe.icons;
 
   /* ------------------------------------------------------------
@@ -20,87 +20,6 @@
      gradient) and a short "starter prompt" that gets prefilled
      into the chat input if the user clicks the card.
      ------------------------------------------------------------ */
-  const WORKOUTS = [
-    { title: 'Push Day',  sub: 'Chest · Shoulders · Triceps',
-      colorA: '#5c8cff', colorB: '#7b55ff',
-      prompt: 'Give me a 45-minute push day (chest, shoulders, triceps) for my experience level.' },
-    { title: 'Pull Day',  sub: 'Back · Biceps · Rear Delts',
-      colorA: '#3ea9ff', colorB: '#2fd1c4',
-      prompt: 'Plan a 45-minute pull day (back, biceps) with two finisher options.' },
-    { title: 'Leg Day',   sub: 'Quads · Hams · Glutes',
-      colorA: '#ff7a5c', colorB: '#ff3d8f',
-      prompt: 'Build me a leg day that balances quad- and posterior-chain work.' },
-    { title: 'Chest Focus', sub: 'Hypertrophy block',
-      colorA: '#7ab3ff', colorB: '#3d6dff',
-      prompt: 'Give me a chest-focused hypertrophy session with two horizontal and two incline movements.' },
-    { title: 'Full Body', sub: '40 min · Express',
-      colorA: '#9b7bff', colorB: '#4aa3ff',
-      prompt: 'Design a 40-minute full-body session covering squat, hinge, push, pull.' },
-    { title: 'Cardio + Core', sub: 'Conditioning',
-      colorA: '#52d4a3', colorB: '#3d8bff',
-      prompt: 'Give me a 30-minute cardio + core circuit with three rounds.' }
-  ];
-
-  function WorkoutCarousel({ onPick }) {
-    // Shows 3 cards side-by-side at a time. Auto-rotates every 3.8s,
-    // pauses on hover. Arrows nav manually. The index is the LEFTMOST
-    // visible card; we show [index, index+1, index+2] modulo length.
-    const [index, setIndex] = useState(0);
-    const [paused, setPaused] = useState(false);
-    const total = WORKOUTS.length;
-
-    useEffect(() => {
-      if (paused) return;
-      const t = setInterval(() => setIndex(i => (i + 1) % total), 3800);
-      return () => clearInterval(t);
-    }, [paused, total]);
-
-    const next = () => setIndex(i => (i + 1) % total);
-    const prev = () => setIndex(i => (i - 1 + total) % total);
-
-    // Build an ordered list starting from `index` so the layout doesn't
-    // jump when we wrap.  We render all cards and translate the row.
-    return (
-      <div className="workout-carousel"
-           onMouseEnter={() => setPaused(true)}
-           onMouseLeave={() => setPaused(false)}>
-        <button type="button" className="carousel-arrow prev" onClick={prev}
-                aria-label="Previous workout"><ArrowLeftIcon /></button>
-        <div className="carousel-viewport">
-          <div className="carousel-track"
-               style={{ transform: `translateX(calc(-${index} * (var(--card-w) + var(--card-gap))))` }}>
-            {WORKOUTS.map((w, i) => (
-              <button type="button" key={i} className="workout-card liquid"
-                      onClick={() => onPick(w.prompt)}
-                      style={{
-                        '--card-a': w.colorA,
-                        '--card-b': w.colorB
-                      }}>
-                <span className="workout-card-glow" />
-                <div className="workout-card-label">Pre-made · Workout</div>
-                <div className="workout-card-title">{w.title}</div>
-                <div className="workout-card-sub">{w.sub}</div>
-                <div className="workout-card-cta">
-                  <span>Try it</span>
-                  <ArrowRightIcon />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-        <button type="button" className="carousel-arrow next" onClick={next}
-                aria-label="Next workout"><ArrowRightIcon /></button>
-        <div className="carousel-dots" role="tablist" aria-label="Workout selection">
-          {WORKOUTS.map((_, i) => (
-            <button key={i} role="tab" aria-selected={i === index}
-                    className={`carousel-dot${i === index ? ' is-active' : ''}`}
-                    onClick={() => setIndex(i)}
-                    aria-label={`Go to workout ${i + 1}`} />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   /* ------------------------------------------------------------
      PlusMenu — the "+" menu that opens from inside the chat input.
@@ -234,20 +153,7 @@
 
     return (
       <div className="chat-input liquid" ref={wrapRef}>
-        <textarea
-          ref={taRef}
-          className="chat-input-textarea"
-          placeholder="Ask anything…"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          rows={1}
-        />
+        {/* Attachment preview — above the text row */}
         {attachments && attachments.length > 0 && (
           <div className="chat-attachments">
             {attachments.map((a, i) => (
@@ -263,11 +169,24 @@
             ))}
           </div>
         )}
+        {/* Input row: + | textarea | mic + send — all inline */}
         <div className="chat-input-row">
-          <div className="chat-input-left">
-            <PlusMenu onAttach={onAttach} />
-          </div>
-          <div className="chat-input-right">
+          <PlusMenu onAttach={onAttach} />
+          <textarea
+            ref={taRef}
+            className="chat-input-textarea"
+            placeholder="Ask anything…"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            rows={1}
+          />
+          <div className="chat-input-actions">
             <button type="button" className="icon-btn" aria-label="Voice input" title="Voice (coming soon)">
               <MicIcon />
             </button>
@@ -286,9 +205,9 @@
 
   /* ------------------------------------------------------------
      Message — a single user or assistant bubble.
-     Renders assistant content as markdown once streaming is done.
+     Handles text chat, image thumbnails, and IdentifyCard results.
      ------------------------------------------------------------ */
-  function Message({ role, content, streaming }) {
+  function Message({ role, content, streaming, imageDataUrl, identification }) {
     const { useMemo } = React;
 
     const html = useMemo(() => {
@@ -301,10 +220,36 @@
     if (role === 'user') {
       return (
         <div className="msg msg-user">
-          <div className="msg-bubble">{content}</div>
+          {imageDataUrl && (
+            <img src={imageDataUrl} alt="Uploaded" className="msg-user-image" />
+          )}
+          {content && <div className="msg-bubble">{content}</div>}
         </div>
       );
     }
+
+    // Identify result — show rich card
+    if (identification) {
+      return SpotMe.IdentifyCard
+        ? <SpotMe.IdentifyCard ident={identification} />
+        : null;
+    }
+
+    // Identify loading state
+    if (streaming && !content) {
+      return (
+        <div className="msg msg-assistant">
+          <div className="msg-avatar"><SpotMeLogo size={26} /></div>
+          <div className="msg-body">
+            <div className="msg-role">SpotMe Coach</div>
+            <div className="msg-content">
+              Analyzing equipment<span className="msg-cursor" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="msg msg-assistant">
         <div className="msg-avatar"><SpotMeLogo size={26} /></div>
@@ -380,11 +325,53 @@
     const send = useCallback((text) => {
       if (sending) return;
       const imageDataUrl = (attachments.find(a => a.dataUrl) || {}).dataUrl || undefined;
-      setMessages(m => [...m, { role: 'user', content: text }]);
       setInput('');
       setAttachments([]);
       setSending(true);
       setError(null);
+
+      /* ── Image attached → identify endpoint ─────────────────── */
+      if (imageDataUrl) {
+        setMessages(m => [...m,
+          { role: 'user', content: text || '', imageDataUrl },
+          { role: 'assistant', content: '', streaming: true }
+        ]);
+        SpotMe.api.identify({ sessionId: sessionId || undefined, imageDataUrl })
+          .then(r => {
+            if (r.ok) {
+              setSessionId(r.data.sessionId);
+              if (onSessionCreated) onSessionCreated();
+              setMessages(m => {
+                const copy = [...m];
+                const last = copy[copy.length - 1];
+                if (last && last.streaming) {
+                  copy[copy.length - 1] = { ...last, streaming: false, identification: r.data.identification };
+                }
+                return copy;
+              });
+            } else {
+              setMessages(m => {
+                const copy = [...m];
+                if (copy[copy.length - 1]?.streaming) copy.pop();
+                return copy;
+              });
+              setError(r.error || 'Could not identify the equipment. Try a clearer photo.');
+            }
+          })
+          .catch(() => {
+            setMessages(m => {
+              const copy = [...m];
+              if (copy[copy.length - 1]?.streaming) copy.pop();
+              return copy;
+            });
+            setError('Could not reach the server.');
+          })
+          .finally(() => setSending(false));
+        return;
+      }
+
+      /* ── Text only → streaming chat ─────────────────────────── */
+      setMessages(m => [...m, { role: 'user', content: text }]);
 
       // Append a placeholder assistant message we'll stream into.
       setMessages(m => [...m, { role: 'assistant', content: '', streaming: true }]);
@@ -419,10 +406,16 @@
           setSending(false);
         },
         onError: (msg) => {
-          // Remove the empty streaming bubble, show error banner.
           setMessages(m => {
             const copy = [...m];
-            if (copy[copy.length - 1]?.streaming) copy.pop();
+            const last = copy[copy.length - 1];
+            if (last && last.streaming) {
+              if (last.content) {
+                copy[copy.length - 1] = { ...last, streaming: false };
+              } else {
+                copy.pop();
+              }
+            }
             return copy;
           });
           setError(msg || 'Something went wrong. Please try again.');
@@ -461,18 +454,15 @@
                 autoFocus
               />
             </div>
-            <div className="chat-empty-suggestions">
-              <div className="chat-empty-suggestions-label">
-                Try a pre-made workout
-              </div>
-              <WorkoutCarousel onPick={(p) => { setInput(p); send(p); }} />
-            </div>
           </div>
         ) : (
           <>
             <div className="chat-thread" ref={threadRef}>
               {messages.map((m, i) => (
-                <Message key={i} role={m.role} content={m.content} streaming={!!m.streaming} />
+                <Message key={i} role={m.role} content={m.content}
+                         streaming={!!m.streaming}
+                         imageDataUrl={m.imageDataUrl}
+                         identification={m.identification} />
               ))}
               {error && (
                 <div className="chat-error">{error}</div>
@@ -496,5 +486,4 @@
   }
 
   SpotMe.ChatPage = ChatPage;
-  SpotMe.WORKOUTS = WORKOUTS;
 })();

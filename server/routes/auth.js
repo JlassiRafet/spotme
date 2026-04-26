@@ -47,6 +47,8 @@ function validateSignup(body) {
   }
   if (!body.password || body.password.length < 12) {
     errors.password = 'Password must be at least 12 characters.';
+  } else if (body.password.length > 72) {
+    errors.password = 'Password is too long (max 72 characters).';
   } else if (!/[a-z]/.test(body.password) || !/[A-Z]/.test(body.password) ||
              !/[0-9]/.test(body.password) || !/[^A-Za-z0-9]/.test(body.password)) {
     errors.password = 'Password needs lowercase, uppercase, a number, and a symbol.';
@@ -159,19 +161,25 @@ authRoutes.delete('/account', requireAuth, handler((req, res) => {
 
 /* ---------- GET /api/auth/google (initiate OAuth) ---------- */
 
+/* In-memory state store — keyed by random hex, expires in 10 minutes */
+const oauthStates = new Map();
+
 authRoutes.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId || clientId === 'REPLACE_ME') {
     return res.status(503).send('Google Sign-In is not configured on this server.');
   }
   const base = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 8787}`;
+  const state = require('crypto').randomBytes(16).toString('hex');
+  oauthStates.set(state, Date.now() + 10 * 60 * 1000);
   const params = new URLSearchParams({
     client_id:     clientId,
     redirect_uri:  `${base}/api/auth/google/callback`,
     response_type: 'code',
     scope:         'openid email profile',
     access_type:   'offline',
-    prompt:        'select_account'
+    prompt:        'select_account',
+    state
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 });
@@ -182,9 +190,16 @@ authRoutes.get('/google/callback', async (req, res) => {
   const base     = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 8787}`;
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const secret   = process.env.GOOGLE_CLIENT_SECRET;
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
 
   if (error || !code) return res.redirect(`${base}/?auth_error=cancelled`);
+
+  // Validate CSRF state
+  const expiry = oauthStates.get(state);
+  oauthStates.delete(state);
+  if (!state || !expiry || Date.now() > expiry) {
+    return res.redirect(`${base}/?auth_error=invalid_state`);
+  }
 
   try {
     // Exchange auth code for access token

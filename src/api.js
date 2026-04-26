@@ -61,19 +61,26 @@
     }
 
     let response;
+    const timeoutCtrl = new AbortController();
+    const timeoutId = setTimeout(() => timeoutCtrl.abort(), 30000);
     try {
       response = await fetch(BASE + path, {
         method,
         headers,
-        body: body ? JSON.stringify(body) : undefined
+        body: body ? JSON.stringify(body) : undefined,
+        signal: timeoutCtrl.signal
       });
     } catch (e) {
-      // Network failure, CORS block, server not running — distinct from a 500.
+      if (e?.name === 'AbortError') {
+        return { ok: false, status: 0, error: 'Request timed out. Please try again.' };
+      }
       return {
         ok: false,
         status: 0,
         error: 'Can\'t reach the server. Is it running on http://localhost:8787?'
       };
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     const text = await response.text();
@@ -215,11 +222,28 @@
     return ctrl;
   }
 
-  function identify({ sessionId, imageDataUrl }) {
-    return request('/api/identify', {
-      method: 'POST',
-      body: { sessionId, imageDataUrl }
-    });
+  async function identify({ sessionId, imageDataUrl }) {
+    const headers = { 'Content-Type': 'application/json' };
+    const t = getToken();
+    if (t) headers.Authorization = `Bearer ${t}`;
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 60000);
+    try {
+      const res = await fetch('/api/identify', {
+        method: 'POST', headers, signal: ctrl.signal,
+        body: JSON.stringify({ sessionId, imageDataUrl })
+      });
+      const text = await res.text();
+      let payload = null;
+      try { payload = text ? JSON.parse(text) : null; } catch { payload = { error: text }; }
+      if (!res.ok) return { ok: false, status: res.status, error: payload?.error || 'Identification failed.' };
+      return { ok: true, status: res.status, data: payload };
+    } catch (e) {
+      if (e?.name === 'AbortError') return { ok: false, status: 0, error: 'Identification timed out. Try again.' };
+      return { ok: false, status: 0, error: 'Can\'t reach the server.' };
+    } finally {
+      clearTimeout(tid);
+    }
   }
 
   /* ---------- sessions (history) ---------- */

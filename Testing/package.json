@@ -1,0 +1,25 @@
+{
+  "name": "spotme-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --config vitest.config.js",
+    "test:watch": "vitest watch --config vitest.config.js",
+    "test:coverage": "vitest run --coverage --config vitest.config.js",
+    "test:k6:smoke": "k6 run k6/smoke.js",
+    "test:k6:load": "k6 run k6/load.js",
+    "test:k6:stress": "k6 run k6/stress.js"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.0",
+    "supertest": "^7.0.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "sql.js": "^1.11.0"
+  }
+}

@@ -135,9 +135,7 @@
     if (loading) {
       return (
         <div className="history-empty">
-          <div className="history-empty-icon"><HistoryIcon /></div>
-          <h2>Loading…</h2>
-          <p>Fetching your past conversations.</p>
+          <div className="history-loading-spinner" aria-label="Loading" />
         </div>
       );
     }
@@ -269,6 +267,7 @@
                           if (e.key === 'Enter')  { e.stopPropagation(); commitRename(session.id); }
                           if (e.key === 'Escape') { e.stopPropagation(); setRenamingId(null); setRenameVal(''); }
                         }}
+                        onBlur={() => commitRename(session.id)}
                         onClick={e => e.stopPropagation()}
                         disabled={renameLoading}
                         maxLength={120}

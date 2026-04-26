@@ -36,8 +36,15 @@ if (!apiKey || apiKey === 'REPLACE_ME' || apiKey.length < 20) {
 const app = express();
 
 /* ---------- middleware ---------- */
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use((_, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+app.use(express.json({ limit: '4mb' }));
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 
 const origins = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 app.use(cors({
@@ -87,8 +94,9 @@ app.use(express.static(frontendDir, {
 /* ---------- error handler ---------- */
 app.use((err, _req, res, _next) => {
   console.error('[spotme] Unhandled error:', err);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error'
+  const status = err.status || 500;
+  res.status(status).json({
+    error: status < 500 ? (err.message || 'Request failed') : 'Internal server error'
   });
 });
 

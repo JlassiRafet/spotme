@@ -11,6 +11,28 @@
     LogoutIcon, CrownIcon
   } = SpotMe.icons;
 
+  function PlansIcon() {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+           strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+    );
+  }
+
+  function AboutIcon() {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+           strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    );
+  }
+
   function Avatar({ profile, size = 32, showPro = true }) {
     const initial = (profile.firstName || '?').charAt(0).toUpperCase();
     return (
@@ -186,6 +208,18 @@
               <TrackerIcon />
               <span>Tracker</span>
             </button>
+            <button type="button"
+                    className={`mobile-drawer-item${page === 'plans' ? ' is-active' : ''}`}
+                    onClick={() => nav('plans')}>
+              <PlansIcon />
+              <span>Plans</span>
+            </button>
+            <button type="button"
+                    className={`mobile-drawer-item${page === 'about' ? ' is-active' : ''}`}
+                    onClick={() => nav('about')}>
+              <AboutIcon />
+              <span>About</span>
+            </button>
           </nav>
 
           {/* Recent sessions */}
@@ -268,6 +302,8 @@
       page === 'profile' ? 'Account' :
       page === 'tracker' ? 'Tracker' :
       page === 'history' ? 'History' :
+      page === 'plans'   ? 'Plans' :
+      page === 'about'   ? 'About' :
                            'SpotMe';
 
     return (
@@ -312,6 +348,14 @@
             <SidebarItem icon={<TrackerIcon />} label="Tracker"
                          active={page === 'tracker'}
                          onClick={() => setPage('tracker')} />
+
+            <SidebarItem icon={<PlansIcon />} label="Plans"
+                         active={page === 'plans'}
+                         onClick={() => setPage('plans')} />
+
+            <SidebarItem icon={<AboutIcon />} label="About"
+                         active={page === 'about'}
+                         onClick={() => setPage('about')} />
 
             <div className="sidebar-history-group">
               <div className="sidebar-history-header">
@@ -416,11 +460,18 @@
               <SpotMe.UnderDev title="Tracker — Pro feature"
                                body="Progress tracking is part of SpotMe Pro. Upgrade to unlock weekly trends, PR charts, and goal streaks." />
             )}
+            {page === 'plans' && SpotMe.PlansPage && (
+              <SpotMe.PlansPage onBack={() => setPage('chat')} />
+            )}
+            {page === 'about' && SpotMe.AboutPage && (
+              <SpotMe.AboutPage />
+            )}
             {page === 'history' && SpotMe.HistoryPage && (
               <SpotMe.HistoryPage
                 onOpenChat={(session) => {
                   setRestoredSession(session || null);
                   setChatSessionId(id => id + 1);
+                  loadSidebarSessions();
                   setPage('chat');
                 }}
               />
