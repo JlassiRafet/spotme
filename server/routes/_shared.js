@@ -63,21 +63,44 @@ export function handler(fn) {
 export function publicUser(u) {
   if (!u) return null;
   return {
-    id:            u.id,
-    email:         u.email,
-    firstName:     u.first_name,
-    lastName:      u.last_name,
-    countryCode:   u.country_code,
-    phone:         u.phone,
-    level:         u.level,
-    weight:        u.weight,
-    weightUnit:    u.weight_unit,
-    height:        u.height,
-    heightUnit:    u.height_unit,
-    playsSport:    u.plays_sport,
-    sportName:     u.sport_name,
-    trainingGoal:  u.training_goal,
-    plan:          u.plan,
-    avatarUrl:     u.avatar_url
+    id:                  u.id,
+    email:               u.email,
+    firstName:           u.first_name,
+    lastName:            u.last_name,
+    countryCode:         u.country_code,
+    phone:               u.phone,
+    level:               u.level,
+    weight:              u.weight,
+    weightUnit:          u.weight_unit,
+    height:              u.height,
+    heightUnit:          u.height_unit,
+    playsSport:          u.plays_sport,
+    sportName:           u.sport_name,
+    trainingGoal:        u.training_goal,
+    plan:                u.plan || 'free',
+    avatarUrl:           u.avatar_url,
+    subscriptionStatus:  u.subscription_status || 'free',
+    subscriptionEnd:     u.subscription_end ? u.subscription_end * 1000 : null,
   };
 }
+
+/** Middleware: require an active Pro subscription. */
+export function requirePro(req, _res, next) {
+  const u = req.user;
+  const isPro = u.plan === 'pro' &&
+    (u.subscription_status === 'active' || u.subscription_status === 'trialing');
+  if (!isPro) {
+    return next(new ApiError(403, 'This feature requires SpotMe Pro.'));
+  }
+  next();
+}
+
+/** Returns the Unix timestamp for the start of today (UTC). */
+export function startOfTodayUtc() {
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  return Math.floor(now.getTime() / 1000);
+}
+
+/** Free-tier daily message limit. */
+export const FREE_DAILY_MESSAGES = 20;

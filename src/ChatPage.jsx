@@ -585,7 +585,15 @@
                          t={t} />
               ))}
               {error && (
-                <div className="chat-error">{error}</div>
+                <div className={`chat-error${error.includes('free AI messages') ? ' chat-error--limit' : ''}`}>
+                  {error}
+                  {error.includes('free AI messages') && (
+                    <button type="button" className="chat-upgrade-btn"
+                            onClick={() => window.dispatchEvent(new CustomEvent('spotme:navigate', { detail: 'plans' }))}>
+                      Upgrade to Pro →
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <div className="chat-footer">

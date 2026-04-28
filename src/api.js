@@ -336,6 +336,8 @@
     // tracker
     logWorkout, getTracker, getTrackerStats, deleteWorkoutLog,
     // misc
-    health
+    health,
+    // generic (used by PlansPage and others)
+    request: (path, opts = {}) => request(path, { method: opts.method || 'GET', body: opts.body || null }),
   };
 })();

@@ -21,7 +21,7 @@
 import express from 'express';
 import Groq from 'groq-sdk';
 import { stmts } from '../db.js';
-import { ApiError, requireAuth, handler } from './_shared.js';
+import { ApiError, requireAuth, handler, startOfTodayUtc, FREE_DAILY_MESSAGES } from './_shared.js';
 
 export const chatRoutes = express.Router();
 
@@ -66,6 +66,14 @@ chatRoutes.post('/', requireAuth, handler(async (req, res) => {
 
   if (!message && !imageDataUrl) throw new ApiError(400, 'Message or image is required.');
   if (message.length > 4000)      throw new ApiError(400, 'Message is too long (max 4000 chars).');
+
+  /* ---- free-tier daily message limit ---- */
+  if (req.user.plan !== 'pro') {
+    const row = stmts.countUserMessagesToday.get(req.user.id, startOfTodayUtc());
+    if (row && row.cnt >= FREE_DAILY_MESSAGES) {
+      throw new ApiError(429, `You've used all ${FREE_DAILY_MESSAGES} free AI messages for today. Upgrade to SpotMe Pro for unlimited coaching.`);
+    }
+  }
 
   /* ---- resolve or create session ---- */
   let sessionId = Number(req.body.sessionId) || null;
@@ -167,6 +175,14 @@ chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
 
   if (!message && !imageDataUrl) throw new ApiError(400, 'Message or image is required.');
   if (message.length > 4000)      throw new ApiError(400, 'Message is too long (max 4000 chars).');
+
+  /* ---- free-tier daily message limit ---- */
+  if (req.user.plan !== 'pro') {
+    const row = stmts.countUserMessagesToday.get(req.user.id, startOfTodayUtc());
+    if (row && row.cnt >= FREE_DAILY_MESSAGES) {
+      throw new ApiError(429, `You've used all ${FREE_DAILY_MESSAGES} free AI messages for today. Upgrade to SpotMe Pro for unlimited coaching.`);
+    }
+  }
 
   /* ---- resolve or create session ---- */
   let sessionId = Number(req.body.sessionId) || null;

@@ -115,9 +115,15 @@
           </svg>
           <span>{t('nav.account')}</span>
         </button>
-        {profile.subscription !== 'pro' && (
+        {profile.plan === 'pro' ? (
           <button type="button" role="menuitem" className="profile-menu-item"
-                  onClick={() => { onNavigate('tracker'); onClose(); }}>
+                  onClick={() => { onNavigate('plans'); onClose(); }}>
+            <CrownIcon />
+            <span>Manage plan</span>
+          </button>
+        ) : (
+          <button type="button" role="menuitem" className="profile-menu-item profile-menu-upgrade"
+                  onClick={() => { onNavigate('plans'); onClose(); }}>
             <CrownIcon />
             <span>{t('nav.upgradePlan')}</span>
           </button>
@@ -267,6 +273,31 @@
     );
   }
 
+  /* ── Pro Success Modal ──────────────────────────────────────── */
+  function ProSuccessModal({ onClose }) {
+    useEffect(() => {
+      const id = setTimeout(onClose, 4500);
+      return () => clearTimeout(id);
+    }, [onClose]);
+
+    return (
+      <div className="pro-success-overlay" onClick={onClose}>
+        <div className="pro-success-modal" onClick={e => e.stopPropagation()}>
+          <div className="pro-success-icon">🎉</div>
+          <h2 className="pro-success-title">You're now a PRO member!</h2>
+          <p className="pro-success-sub">Enjoy unlimited AI coaching and all premium features.</p>
+          <div className="pro-success-badge">
+            <span>PRO</span>
+          </div>
+          <button type="button" className="pro-success-close" onClick={onClose}>
+            Got it →
+          </button>
+          <div className="pro-success-timer" />
+        </div>
+      </div>
+    );
+  }
+
   function AppShell({ profile, onUpdateProfile, onLogout }) {
     const { t } = useTranslation();
     const [page, setPage] = useState('chat');
@@ -278,6 +309,7 @@
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [sidebarSessions, setSidebarSessions] = useState([]);
     const [historyExpanded, setHistoryExpanded] = useState(true);
+    const [showProSuccess, setShowProSuccess] = useState(false);
 
     const loadSidebarSessions = useCallback(() => {
       SpotMe.api.listSessions().then(r => {
@@ -286,6 +318,55 @@
     }, []);
 
     useEffect(() => { loadSidebarSessions(); }, []);
+
+    /* Handle navigation events dispatched from child components (e.g. HistoryPage upgrade banner) */
+    useEffect(() => {
+      function onNavigateEvent(e) { setPage(e.detail); }
+      window.addEventListener('spotme:navigate', onNavigateEvent);
+      return () => window.removeEventListener('spotme:navigate', onNavigateEvent);
+    }, []);
+
+    /* Detect Stripe checkout=success redirect → verify session → update profile → show modal */
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') !== 'success') return;
+
+      const sessionId = params.get('sid') || '';
+
+      // Navigate to plans page and clean the URL immediately
+      setPage('plans');
+      window.history.replaceState({}, '', window.location.pathname);
+
+      // Show success modal right away (Stripe only sends here on successful payment)
+      setShowProSuccess(true);
+
+      (async () => {
+        // First: verify the checkout session directly with Stripe — updates DB immediately
+        if (sessionId) {
+          const vr = await SpotMe.api.request('/api/subscription/verify', {
+            method: 'POST',
+            body: { sessionId },
+          });
+          if (vr.ok && vr.data.user) {
+            onUpdateProfile(vr.data.user);
+            return; // done — no need to poll
+          }
+        }
+
+        // Fallback: poll /api/auth/me until plan=pro (for webhook-based updates)
+        let attempts = 0;
+        const interval = setInterval(async () => {
+          attempts++;
+          const r = await SpotMe.api.me();
+          if (r.ok && r.data.user) {
+            onUpdateProfile(r.data.user);
+            if (r.data.user.plan === 'pro' || attempts >= 10) clearInterval(interval);
+          } else {
+            clearInterval(interval);
+          }
+        }, 2000);
+      })();
+    }, []);
 
     const startNewChat = useCallback(() => {
       setRestoredSession(null);
@@ -311,6 +392,10 @@
                            'SpotMe';
 
     return (
+      <>
+      {showProSuccess && (
+        <ProSuccessModal onClose={() => setShowProSuccess(false)} />
+      )}
       <div className="app-shell">
         {/* Mobile slide-in drawer */}
         {mobileMenuOpen && (
@@ -398,6 +483,27 @@
             </div>
           </nav>
 
+          {/* Plan status — upgrade banner for free, pro strip for pro */}
+          {profile.plan === 'pro' ? (
+            <div className="sidebar-pro-strip">
+              <CrownIcon />
+              <div className="sidebar-upgrade-text">
+                <span className="sidebar-pro-strip-label">SpotMe Pro</span>
+                <span className="sidebar-pro-strip-sub">All features unlocked</span>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="sidebar-upgrade-banner"
+                    onClick={() => setPage('plans')}
+                    title="Upgrade to SpotMe Pro">
+              <CrownIcon />
+              <div className="sidebar-upgrade-text">
+                <span className="sidebar-upgrade-label">Free plan</span>
+                <span className="sidebar-upgrade-cta">Upgrade to Pro →</span>
+              </div>
+            </button>
+          )}
+
           <div className="app-sidebar-profile">
             <div className="profile-chip-wrap">
               {menuOpen && (
@@ -416,6 +522,7 @@
                 <Avatar profile={profile} size={36} />
                 <span className="profile-chip-name">
                   {profile.firstName} {profile.lastName}
+                  {profile.plan === 'pro' && <span className="sidebar-pro-badge">PRO</span>}
                 </span>
               </button>
             </div>
@@ -464,7 +571,7 @@
               <SpotMe.TrackerPage profile={profile} />
             )}
             {page === 'plans' && SpotMe.PlansPage && (
-              <SpotMe.PlansPage onBack={() => setPage('chat')} />
+              <SpotMe.PlansPage profile={profile} onBack={() => setPage('chat')} onNavigate={setPage} />
             )}
             {page === 'about' && SpotMe.AboutPage && (
               <SpotMe.AboutPage />
@@ -482,6 +589,7 @@
           </section>
         </div>
       </div>
+      </>
     );
   }
 
