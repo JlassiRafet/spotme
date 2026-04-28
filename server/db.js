@@ -435,12 +435,36 @@ function seedPrograms() {
 
   const PROGRAMS = [
     {
-      id: 'upper-pro', category: 'muscle', name: 'Upper',
-      difficulty: 'Professional', cover_color: 'mint',
+      id: 'upper-pro', category: 'muscle', name: 'Upper Body',
+      difficulty: 'Intermediate', cover_color: 'mint',
       cover_image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=800&q=70',
       hero_image:  'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1200&q=70',
-      total_minutes: 25, total_calories: 1200,
-      description: 'Build upper body strength — chest, shoulders, back, arms.'
+      total_minutes: 30, total_calories: 1200,
+      description: 'Chest, shoulders, back and arms — three compound lifts to build balanced upper body strength.'
+    },
+    {
+      id: 'push-day', category: 'muscle', name: 'Push Day',
+      difficulty: 'Intermediate', cover_color: 'mint',
+      cover_image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 38, total_calories: 1400,
+      description: 'Chest, shoulders and triceps — compound presses plus isolation work for full push-muscle development.'
+    },
+    {
+      id: 'pull-day', category: 'muscle', name: 'Pull Day',
+      difficulty: 'Intermediate', cover_color: 'mint',
+      cover_image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 38, total_calories: 1300,
+      description: 'Back and biceps — pull-ups, rows and curls for width, thickness and arm strength.'
+    },
+    {
+      id: 'leg-day', category: 'muscle', name: 'Leg Day',
+      difficulty: 'Intermediate', cover_color: 'orange',
+      cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 43, total_calories: 1600,
+      description: 'Quads, hamstrings, glutes and calves — squat-based lower body programme for size and strength.'
     },
     {
       id: 'yoga-beginner', category: 'cardio', name: 'Yoga',
@@ -459,8 +483,8 @@ function seedPrograms() {
       description: 'High-intensity cardio cycling for cardiovascular endurance.'
     },
     {
-      id: 'lower-pro', category: 'muscle', name: 'Lower',
-      difficulty: 'Professional', cover_color: 'mint',
+      id: 'lower-pro', category: 'muscle', name: 'Lower Body',
+      difficulty: 'Intermediate', cover_color: 'mint',
       cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
       hero_image:  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=70',
       total_minutes: 42, total_calories: 1200,
@@ -485,18 +509,86 @@ function seedPrograms() {
   ];
 
   const SESSIONS = {
-    'upper-pro':            [
-      { name: 'Upper',  sets: 1, reps: 4, minutes: 12, thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60' },
-      { name: 'Lower',  sets: 1, reps: 4, minutes: 13, thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60' }
+    'upper-pro': [
+      { name: 'Bench Press', sets: 4, reps: 10, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders, triceps\nLie flat, bar over mid-chest. Lower to touch, press up explosively. Keep shoulder blades pinched together throughout.' },
+      { name: 'Overhead Press', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders, triceps\nStart at shoulder height. Press bar overhead until arms locked out. Keep core braced, avoid flaring elbows.' },
+      { name: 'Bent-Over Row', sets: 4, reps: 10, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, upper-back, biceps\nHinge at hips, back flat. Pull bar to lower sternum, squeeze shoulder blades at top. Lower with control.' }
     ],
-    'yoga-beginner':        [
-      { name: 'Lower',  sets: 1, reps: 4, minutes: 12, thumbnail: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=200&q=60' },
-      { name: 'Upper',  sets: 1, reps: 4, minutes: 13, thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=60' }
+    'push-day': [
+      { name: 'Bench Press', sets: 4, reps: 10, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders, triceps\nLie flat, bar over mid-chest. Lower to touch, press up explosively. Keep shoulder blades pinched together throughout.' },
+      { name: 'Overhead Press', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders, triceps\nStart at shoulder height. Press overhead until locked out. Brace core, avoid arching the lower back.' },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders\nBench at 30–45°. Press dumbbells up and slightly together. Stretch at the bottom, squeeze at the top.' },
+      { name: 'Lateral Raises', sets: 3, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders\nLight dumbbells, slight elbow bend. Raise to shoulder height only. Pause at top — the lowering phase builds the muscle.' },
+      { name: 'Tricep Pushdown', sets: 3, reps: 12, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: triceps\nElbows pinned to sides. Push bar or rope down until arms fully extend. Squeeze hard at the bottom, return with control.' }
+    ],
+    'pull-day': [
+      { name: 'Pull-ups', sets: 3, reps: 8, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, biceps\nHang, shoulder-width grip. Drive elbows down to pull chest to bar. Full hang at bottom, chin over bar at top.' },
+      { name: 'Barbell Row', sets: 4, reps: 8, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, upper-back, biceps\nHinge at hips, back flat. Pull bar to lower sternum, elbows 45° from body. Squeeze shoulder blades hard at the top.' },
+      { name: 'Face Pulls', sets: 3, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: rear-delts, traps\nCable at head height. Pull rope to forehead, elbows flared high. Pause and externally rotate at end range.' },
+      { name: 'Lat Pulldown', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, biceps\nWide overhand grip. Lean back slightly, pull bar to upper chest. Initiate with elbows, not hands.' },
+      { name: 'Bicep Curls', sets: 3, reps: 12, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: biceps, forearms\nShoulder-width grip, elbows fixed. Curl fully, squeeze at top. Lower slowly — 3-second eccentric for max growth.' }
+    ],
+    'leg-day': [
+      { name: 'Squats', sets: 4, reps: 8, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nFeet shoulder-width, bar on upper traps. Descend to parallel or below. Drive through heels, knees track over toes.' },
+      { name: 'Romanian Deadlift', sets: 4, reps: 10, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: hamstrings, glutes, lower-back\nHinge at hips with soft knees. Lower bar along shins until hamstring stretch. Drive hips through to stand.' },
+      { name: 'Leg Press', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nHigh foot placement targets glutes; low foot placement targets quads. Never lock out knees at the top.' },
+      { name: 'Lunges', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes, hamstrings\nStep forward, lower back knee to near-floor. Front shin vertical, weight through front heel. Alternate legs each rep.' },
+      { name: 'Calf Raises', sets: 4, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: calves\nStand on step edge, heels hanging off. Rise as high as possible, pause at top. Lower all the way for full stretch. Slow reps for maximum activation.' }
+    ],
+    'yoga-beginner': [
+      { name: 'Sun Salutation', sets: 3, reps: 5, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders, abs, lower-back\nFlow through mountain pose, forward fold, plank, cobra and downward dog. Move with your breath — inhale to extend, exhale to fold.' },
+      { name: 'Warrior Sequence', sets: 2, reps: 5, minutes: 13,
+        thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes, shoulders\nWarrior I, II and III in sequence. Keep front knee over ankle, hips square. Hold each pose for 5 full breaths before transitioning.' }
     ],
     'cycling-intermediate': [
-      { name: 'Warm-up', sets: 1, reps: 1, minutes: 5,  thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60' },
-      { name: 'Sprint',  sets: 5, reps: 1, minutes: 20, thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60' },
-      { name: 'Cooldown', sets: 1, reps: 1, minutes: 10, thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60' }
+      { name: 'Warm-up', sets: 1, reps: 1, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, calves\nEasy pace, low resistance. Gradually increase cadence to 80–90 rpm. Get your breathing and legs moving before the main effort.' },
+      { name: 'Sprint Intervals', sets: 5, reps: 1, minutes: 20,
+        thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, hamstrings, glutes, calves\n30 seconds max effort, 90 seconds easy recovery. 5 rounds total. Push cadence above 100 rpm on sprint efforts.' },
+      { name: 'Cooldown', sets: 1, reps: 1, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, calves\nDrop resistance to near zero. Slow cadence to 60 rpm. Let heart rate come back down gradually over the full 10 minutes.' }
     ],
     'lower-pro': [
       {
@@ -541,8 +633,15 @@ function seedPrograms() {
       }
     ],
     'core-beginner': [
-      { name: 'Planks',  sets: 3, reps: 1, minutes: 5, thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60' },
-      { name: 'Crunches', sets: 3, reps: 15, minutes: 10, thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60' }
+      { name: 'Plank', sets: 3, reps: 1, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs, lower-back\nForearms on ground, body straight from head to heel. Squeeze abs and glutes. Hold for 30–60 seconds per set.' },
+      { name: 'Dead Bug', sets: 3, reps: 10, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs\nLie on back, arms up, knees at 90°. Slowly lower opposite arm and leg toward floor. Keep lower back pressed into ground throughout.' },
+      { name: 'Hollow Hold', sets: 3, reps: 1, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs\nLie on back, press lower back into floor. Lift shoulders and legs, arms overhead. Hold the position — this is gymnastics-level core activation.' }
     ],
     'diet-macro': [
       {
@@ -888,6 +987,178 @@ function patchDietPrograms() {
   persist();
 }
 patchDietPrograms();
+
+/* ---------- patch: muscle programs — real exercises + MuscleMap tips ----------
+   Runs on every boot. Replaces generic session names for upper-pro, lower-pro,
+   core-beginner with real exercises. Inserts push-day, pull-day, leg-day if
+   they do not yet exist. */
+function patchMusclePrograms() {
+  const MUSCLE_SESSIONS = {
+    'upper-pro': [
+      { id: 'upper-pro-s1', ord: 1, name: 'Bench Press', sets: 4, reps: 10, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders, triceps\nLie flat, bar over mid-chest. Lower to touch, press up explosively. Keep shoulder blades pinched together throughout.' },
+      { id: 'upper-pro-s2', ord: 2, name: 'Overhead Press', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders, triceps\nStart at shoulder height. Press bar overhead until arms locked out. Keep core braced, avoid flaring elbows.' },
+      { id: 'upper-pro-s3', ord: 3, name: 'Bent-Over Row', sets: 4, reps: 10, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, upper-back, biceps\nHinge at hips, back flat. Pull bar to lower sternum, squeeze shoulder blades at top. Lower with control.' }
+    ],
+    'lower-pro': [
+      { id: 'lower-pro-s1', ord: 1, name: 'Squats', sets: 4, reps: 8, minutes: 15,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nFeet shoulder-width, bar on upper traps. Descend to parallel or below. Drive through heels, knees track over toes throughout.' },
+      { id: 'lower-pro-s2', ord: 2, name: 'Romanian Deadlift', sets: 3, reps: 10, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: hamstrings, glutes, lower-back\nHinge at hips with slight knee bend. Lower bar along legs until hamstring stretch. Drive hips forward to return.' },
+      { id: 'lower-pro-s3', ord: 3, name: 'Leg Press', sets: 3, reps: 12, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nFeet shoulder-width on platform. Lower until 90°, press through heels. Keep lower back against pad throughout.' }
+    ],
+    'core-beginner': [
+      { id: 'core-beginner-s1', ord: 1, name: 'Plank', sets: 3, reps: 1, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs, lower-back\nForearms on ground, body straight from head to heel. Squeeze abs and glutes. Hold for 30–60 seconds per set.' },
+      { id: 'core-beginner-s2', ord: 2, name: 'Dead Bug', sets: 3, reps: 10, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs\nLie on back, arms up, knees at 90°. Slowly lower opposite arm and leg toward floor. Keep lower back pressed into ground throughout.' },
+      { id: 'core-beginner-s3', ord: 3, name: 'Hollow Hold', sets: 3, reps: 1, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: abs\nLie on back, press lower back into floor. Lift shoulders and legs, arms overhead. Hold the position — this is gymnastics-level core activation.' }
+    ]
+  };
+
+  const NEW_MUSCLE_PROGRAMS = [
+    {
+      id: 'push-day', category: 'muscle', name: 'Push Day',
+      difficulty: 'Intermediate', cover_color: 'mint',
+      cover_image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 38, total_calories: 1400,
+      description: 'Chest, shoulders and triceps — compound presses plus isolation work for full push-muscle development.'
+    },
+    {
+      id: 'pull-day', category: 'muscle', name: 'Pull Day',
+      difficulty: 'Intermediate', cover_color: 'mint',
+      cover_image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 38, total_calories: 1300,
+      description: 'Back and biceps — pull-ups, rows and curls for width, thickness and arm strength.'
+    },
+    {
+      id: 'leg-day', category: 'muscle', name: 'Leg Day',
+      difficulty: 'Intermediate', cover_color: 'orange',
+      cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 43, total_calories: 1600,
+      description: 'Quads, hamstrings, glutes and calves — squat-based lower body programme for size and strength.'
+    }
+  ];
+
+  const NEW_MUSCLE_SESSIONS = {
+    'push-day': [
+      { id: 'push-day-s1', ord: 1, name: 'Bench Press', sets: 4, reps: 10, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders, triceps\nLie flat, bar over mid-chest. Lower to touch, press up explosively. Keep shoulder blades pinched together throughout.' },
+      { id: 'push-day-s2', ord: 2, name: 'Overhead Press', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders, triceps\nStart at shoulder height. Press overhead until locked out. Brace core, avoid arching the lower back.' },
+      { id: 'push-day-s3', ord: 3, name: 'Incline Dumbbell Press', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: chest, shoulders\nBench at 30–45°. Press dumbbells up and slightly together. Stretch at the bottom, squeeze at the top.' },
+      { id: 'push-day-s4', ord: 4, name: 'Lateral Raises', sets: 3, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: shoulders\nLight dumbbells, slight elbow bend. Raise to shoulder height only. Pause at top — the lowering phase builds the muscle.' },
+      { id: 'push-day-s5', ord: 5, name: 'Tricep Pushdown', sets: 3, reps: 12, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: triceps\nElbows pinned to sides. Push bar or rope down until arms fully extend. Squeeze hard at the bottom, return with control.' }
+    ],
+    'pull-day': [
+      { id: 'pull-day-s1', ord: 1, name: 'Pull-ups', sets: 3, reps: 8, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, biceps\nHang, shoulder-width grip. Drive elbows down to pull chest to bar. Full hang at bottom, chin over bar at top.' },
+      { id: 'pull-day-s2', ord: 2, name: 'Barbell Row', sets: 4, reps: 8, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, upper-back, biceps\nHinge at hips, back flat. Pull bar to lower sternum, elbows 45° from body. Squeeze shoulder blades hard at the top.' },
+      { id: 'pull-day-s3', ord: 3, name: 'Face Pulls', sets: 3, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: rear-delts, traps\nCable at head height. Pull rope to forehead, elbows flared high. Pause and externally rotate at end range.' },
+      { id: 'pull-day-s4', ord: 4, name: 'Lat Pulldown', sets: 3, reps: 10, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: lats, biceps\nWide overhand grip. Lean back slightly, pull bar to upper chest. Initiate with elbows, not hands.' },
+      { id: 'pull-day-s5', ord: 5, name: 'Bicep Curls', sets: 3, reps: 12, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: biceps, forearms\nShoulder-width grip, elbows fixed. Curl fully, squeeze at top. Lower slowly — 3-second eccentric for max growth.' }
+    ],
+    'leg-day': [
+      { id: 'leg-day-s1', ord: 1, name: 'Squats', sets: 4, reps: 8, minutes: 12,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nFeet shoulder-width, bar on upper traps. Descend to parallel or below. Drive through heels, knees track over toes.' },
+      { id: 'leg-day-s2', ord: 2, name: 'Romanian Deadlift', sets: 4, reps: 10, minutes: 10,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: hamstrings, glutes, lower-back\nHinge at hips with soft knees. Lower bar along shins until hamstring stretch. Drive hips through to stand.' },
+      { id: 'leg-day-s3', ord: 3, name: 'Leg Press', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes\nHigh foot placement targets glutes; low foot placement targets quads. Never lock out knees at the top.' },
+      { id: 'leg-day-s4', ord: 4, name: 'Lunges', sets: 3, reps: 12, minutes: 8,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: quads, glutes, hamstrings\nStep forward, lower back knee to near-floor. Front shin vertical, weight through front heel. Alternate legs each rep.' },
+      { id: 'leg-day-s5', ord: 5, name: 'Calf Raises', sets: 4, reps: 15, minutes: 5,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Primary: calves\nStand on step edge, heels hanging off. Rise as high as possible, pause at top. Lower all the way for full stretch. Slow reps for maximum activation.' }
+    ]
+  };
+
+  sqlDb.run(`
+    UPDATE programs SET name = 'Upper Body', total_minutes = 30,
+      description = 'Chest, shoulders, back and arms — three compound lifts to build balanced upper body strength.'
+    WHERE id = 'upper-pro'
+  `);
+  sqlDb.run(`
+    UPDATE programs SET name = 'Lower Body',
+      description = 'Quads, hamstrings, glutes — three key lower body lifts for strength and muscle.'
+    WHERE id = 'lower-pro'
+  `);
+
+  for (const [programId, sessions] of Object.entries(MUSCLE_SESSIONS)) {
+    sqlDb.run(`DELETE FROM program_sessions WHERE program_id = ?`, [programId]);
+    for (const s of sessions) {
+      stmts.insertProgramSession.run({
+        id: s.id, program_id: programId,
+        ord: s.ord, name: s.name, sets: s.sets, reps: s.reps,
+        minutes: s.minutes, thumbnail: s.thumbnail, tips: s.tips
+      });
+    }
+  }
+
+  for (const p of NEW_MUSCLE_PROGRAMS) {
+    const exists = sqlDb.exec(`SELECT id FROM programs WHERE id = '${p.id}'`);
+    if (!exists?.[0]?.values?.length) {
+      sqlDb.run(
+        `INSERT INTO programs (id, category, name, difficulty, cover_color, cover_image, hero_image, total_minutes, total_calories, description)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [p.id, p.category, p.name, p.difficulty, p.cover_color, p.cover_image, p.hero_image, p.total_minutes, p.total_calories, p.description]
+      );
+    } else {
+      sqlDb.run(
+        `UPDATE programs SET name=?, difficulty=?, cover_color=?, cover_image=?, hero_image=?, total_minutes=?, total_calories=?, description=? WHERE id=?`,
+        [p.name, p.difficulty, p.cover_color, p.cover_image, p.hero_image, p.total_minutes, p.total_calories, p.description, p.id]
+      );
+    }
+    sqlDb.run(`DELETE FROM program_sessions WHERE program_id = ?`, [p.id]);
+    for (const s of NEW_MUSCLE_SESSIONS[p.id]) {
+      stmts.insertProgramSession.run({
+        id: s.id, program_id: p.id,
+        ord: s.ord, name: s.name, sets: s.sets, reps: s.reps,
+        minutes: s.minutes, thumbnail: s.thumbnail, tips: s.tips
+      });
+    }
+  }
+
+  persist();
+}
+patchMusclePrograms();
 
 stmts.cleanExpiredTokens.run();
 setInterval(() => stmts.cleanExpiredTokens.run(), 60 * 60 * 1000);
