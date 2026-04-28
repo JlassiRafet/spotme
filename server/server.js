@@ -7,12 +7,14 @@
  * Routes live in routes/*.js, mounted below.
  * ------------------------------------------------------------ */
 
-import 'dotenv/config';
+import './config.js';
 import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import { db } from './db.js';
 import { authRoutes }         from './routes/auth.js';
@@ -25,8 +27,6 @@ import { trackerRoutes }      from './routes/tracker.js';
 import { subscriptionRoutes, webhookRoutes } from './routes/subscription.js';
 import { programsRoutes }   from './routes/programs.js';
 import { metricsRoutes }    from './routes/metrics.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /* ---------- env sanity check ---------- */
 const apiKey = process.env.GROQ_API_KEY;
@@ -150,3 +150,5 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`[spotme] Vision model: ${process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview'}`);
   console.log(`[spotme] Open http://localhost:${port} in your browser.\n`);
 });
+
+// Trigger restart
