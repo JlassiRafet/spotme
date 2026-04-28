@@ -4,3 +4,8 @@ server/*.sqlite
 server/*.sqlite-journal
 server/uploads/
 .env
+
+# debug/test artifacts
+server/*.log
+server/models.json
+server/models.txt

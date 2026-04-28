@@ -1,4 +1,0 @@
-meta-llama/llama-4-scout-17b-16e-instruct: 400 {"error":{"message":"Image must have at least 2 pixels in each dimension","type":"invalid_request_error"}}
-qwen/qwen3-32b: 400 {"error":{"message":"messages[0].content must be a string","type":"invalid_request_error","param":"messages[0].content"}}
-llama-3.3-70b-versatile: 400 {"error":{"message":"messages[0].content must be a string","type":"invalid_request_error","param":"messages[0].content"}}
-groq/compound: 400 {"error":{"message":"messages[0].content must be a string","type":"invalid_request_error","param":"messages[0].content"}}
