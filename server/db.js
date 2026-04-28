@@ -88,6 +88,19 @@ sqlDb.exec(`
     FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
   );
   CREATE INDEX IF NOT EXISTS messages_session_idx ON messages(session_id, created_at ASC);
+
+  CREATE TABLE IF NOT EXISTS workout_logs (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id       INTEGER NOT NULL,
+    exercise      TEXT    NOT NULL,
+    sets_json     TEXT    NOT NULL DEFAULT '[]',
+    muscle_group  TEXT,
+    machine_id    TEXT,
+    source        TEXT    NOT NULL DEFAULT 'manual',
+    logged_at     INTEGER NOT NULL DEFAULT (unixepoch()),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS workout_logs_user_date_idx ON workout_logs(user_id, logged_at DESC);
 `);
 
 /* ---------- persistence ---------- */
@@ -202,6 +215,52 @@ export const stmts = {
     VALUES (@session_id, @role, @content, @image_data_url, @structured_json)
   `),
   listMessages:       prep('SELECT * FROM messages WHERE session_id = ? ORDER BY created_at ASC, id ASC'),
+
+  /* ---- tracker ---- */
+  insertWorkout:      prep(`
+    INSERT INTO workout_logs (user_id, exercise, sets_json, muscle_group, machine_id, source, logged_at)
+    VALUES (@user_id, @exercise, @sets_json, @muscle_group, @machine_id, @source, @logged_at)
+  `),
+  getWorkoutsByRange: prep(`
+    SELECT * FROM workout_logs
+    WHERE user_id = ? AND logged_at >= ? AND logged_at <= ?
+    ORDER BY logged_at DESC, id DESC
+  `),
+  getRecentExercises: prep(`
+    SELECT exercise, sets_json, muscle_group,
+           MAX(logged_at) as last_used
+    FROM workout_logs
+    WHERE user_id = ?
+    GROUP BY exercise
+    ORDER BY last_used DESC
+    LIMIT 15
+  `),
+  getWorkoutCount:    prep(`
+    SELECT COUNT(*) as cnt FROM workout_logs
+    WHERE user_id = ? AND logged_at >= ?
+  `),
+  getTopMuscle:       prep(`
+    SELECT muscle_group, COUNT(*) as cnt
+    FROM workout_logs
+    WHERE user_id = ? AND logged_at >= ? AND muscle_group IS NOT NULL AND muscle_group != ''
+    GROUP BY muscle_group
+    ORDER BY cnt DESC
+    LIMIT 1
+  `),
+  getAllWorkoutDates:  prep(`
+    SELECT DISTINCT date(logged_at, 'unixepoch') as d
+    FROM workout_logs
+    WHERE user_id = ?
+    ORDER BY d DESC
+  `),
+  getAllExercisePRs:   prep(`
+    SELECT exercise, sets_json, logged_at
+    FROM workout_logs
+    WHERE user_id = ?
+    ORDER BY logged_at DESC
+  `),
+  getWorkoutById:     prep('SELECT * FROM workout_logs WHERE id = ? AND user_id = ?'),
+  deleteWorkout:      prep('DELETE FROM workout_logs WHERE id = ? AND user_id = ?'),
 
   deleteUser:         prep('DELETE FROM users WHERE id = ?')
 };

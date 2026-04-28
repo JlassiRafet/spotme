@@ -456,9 +456,8 @@
                                     return r;
                                   }} />
             )}
-            {page === 'tracker' && SpotMe.UnderDev && (
-              <SpotMe.UnderDev title="Tracker — Pro feature"
-                               body="Progress tracking is part of SpotMe Pro. Upgrade to unlock weekly trends, PR charts, and goal streaks." />
+            {page === 'tracker' && SpotMe.TrackerPage && (
+              <SpotMe.TrackerPage profile={profile} />
             )}
             {page === 'plans' && SpotMe.PlansPage && (
               <SpotMe.PlansPage onBack={() => setPage('chat')} />

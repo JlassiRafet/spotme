@@ -273,6 +273,24 @@
     return request('/api/profile/upgrade', { method: 'POST' });
   }
 
+  /* ---------- tracker ---------- */
+
+  function logWorkout(data) {
+    return request('/api/tracker/log', { method: 'POST', body: data });
+  }
+
+  function getTracker(days = 7) {
+    return request(`/api/tracker?days=${days}`);
+  }
+
+  function getTrackerStats() {
+    return request('/api/tracker/stats');
+  }
+
+  function deleteWorkoutLog(id) {
+    return request(`/api/tracker/${id}`, { method: 'DELETE' });
+  }
+
   /* ---------- health (used by a small status badge, optional) ---------- */
 
   function health() {
@@ -315,6 +333,8 @@
     listSessions, getSession, renameSession, deleteSession,
     // profile
     updateProfile, requestUpgrade,
+    // tracker
+    logWorkout, getTracker, getTrackerStats, deleteWorkoutLog,
     // misc
     health
   };

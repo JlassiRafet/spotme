@@ -6,6 +6,7 @@
 
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
+  const { useState } = React;
 
   /* ── Muscle → body position map (100×180 viewBox) ──────────── */
   /* cx < 48 = left-side muscle → mirrored to right automatically  */
@@ -42,25 +43,15 @@
 
   /* ── Human-curved body silhouette paths (100×180 viewBox) ──── */
   const BODY_PATHS = [
-    // Neck
     'M46,22 C45,25 45,28 45,31 L55,31 C55,28 55,25 54,22 Z',
-    // Torso — shoulders wide, waist in, hips out
     'M28,32 C22,35 20,42 22,54 C22,64 26,73 28,81 C30,89 33,94 37,97 L63,97 C67,94 70,89 72,81 C74,73 78,64 78,54 C80,42 78,35 72,32 C64,27 56,25 50,25 C44,25 36,27 28,32 Z',
-    // Left upper arm — rounded deltoid-to-elbow taper
     'M20,40 C13,43 9,52 10,63 C11,71 14,77 18,79 C22,77 23,70 22,60 C22,51 22,45 20,40 Z',
-    // Right upper arm
     'M80,40 C87,43 91,52 90,63 C89,71 86,77 82,79 C78,77 77,70 78,60 C78,51 78,45 80,40 Z',
-    // Left forearm — tapers to wrist
     'M10,63 C7,70 6,79 8,87 C10,93 14,97 17,95 C19,91 20,83 18,76 C14,71 12,67 10,63 Z',
-    // Right forearm
     'M90,63 C93,70 94,79 92,87 C90,93 86,97 83,95 C81,91 80,83 82,76 C86,71 88,67 90,63 Z',
-    // Left thigh — wider at top, knee narrowing
     'M34,97 C27,102 25,113 27,126 C29,137 34,142 40,144 C46,142 49,136 49,126 C49,114 47,103 43,97 Z',
-    // Right thigh
     'M66,97 C73,102 75,113 73,126 C71,137 66,142 60,144 C54,142 51,136 51,126 C51,114 53,103 57,97 Z',
-    // Left calf — calf bulge then taper to ankle
     'M27,126 C25,137 25,150 27,159 C29,166 35,171 40,172 C45,171 49,166 49,159 C49,150 49,142 40,144 C34,142 29,137 27,126 Z',
-    // Right calf
     'M73,126 C75,137 75,150 73,159 C71,166 65,171 60,172 C55,171 51,166 51,159 C51,150 51,142 60,144 C66,142 71,137 73,126 Z',
   ];
 
@@ -84,7 +75,6 @@
           <title>{name}</title>
         </ellipse>
       );
-      // Mirror bilateral muscles (left-side cx < 48) onto right side
       if (!pos.mid && pos.cx < 48) {
         highlights.push(
           <ellipse key={name + '_r'} cx={100 - pos.cx} cy={pos.cy} rx={rx} ry={ry}
@@ -98,26 +88,49 @@
     return (
       <svg viewBox="0 0 100 180" width="88" height="158" className="muscle-body-svg"
            aria-label={`${view} body muscle diagram`}>
-        {/* Head */}
         <circle cx="50" cy="13" r="10.5"
                 fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" strokeWidth="0.8" />
-        {/* Organic body silhouette */}
         {BODY_PATHS.map((d, i) => (
           <path key={i} d={d}
                 fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" strokeWidth="0.8" />
         ))}
-        {/* Muscle highlights */}
         {highlights}
       </svg>
     );
   }
 
   function IdentifyCard({ ident }) {
+    const [trackState, setTrackState] = useState('idle');
+
     const allMuscles = [...(ident.primaryMuscles || []), ...(ident.secondaryMuscles || [])];
     const hasFront = allMuscles.some(m => MUSCLE_POSITIONS[m]?.view === 'front');
     const hasBack  = allMuscles.some(m => MUSCLE_POSITIONS[m]?.view === 'back');
 
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(ident.machineName + ' gym machine')}&tbm=isch`;
+
+    const guessMuscleGroup = () => {
+      const pm = (ident.primaryMuscles || []).map(m => m.toLowerCase());
+      if (pm.some(m => m.includes('pectoral'))) return 'Chest';
+      if (pm.some(m => m.includes('lat') || m.includes('trapez') || m.includes('rhomb'))) return 'Back';
+      if (pm.some(m => m.includes('quad') || m.includes('hamstr') || m.includes('glut') || m.includes('calf') || m.includes('calves'))) return 'Legs';
+      if (pm.some(m => m.includes('deltoid'))) return 'Shoulders';
+      if (pm.some(m => m.includes('bicep') || m.includes('tricep') || m.includes('forearm'))) return 'Arms';
+      if (pm.some(m => m.includes('abdomin') || m.includes('obliq'))) return 'Core';
+      return '';
+    };
+
+    const handleAddToTracker = async () => {
+      if (trackState !== 'idle') return;
+      setTrackState('saving');
+      const r = await SpotMe.api.logWorkout({
+        exercise: ident.machineName,
+        sets: [{ reps: 10, weight: 0 }, { reps: 10, weight: 0 }, { reps: 10, weight: 0 }],
+        muscleGroup: guessMuscleGroup(),
+        machineId: ident.machineName,
+        source: 'identify'
+      });
+      setTrackState(r.ok ? 'saved' : 'idle');
+    };
 
     return (
       <div className="identify-card">
@@ -141,7 +154,6 @@
 
         {/* ── Muscle section ───────────────────────────────────── */}
         <div className="identify-muscle-wrap">
-          {/* Body diagrams */}
           {(hasFront || hasBack) && (
             <div className="identify-body-maps">
               {hasFront && (
@@ -160,7 +172,6 @@
                     secondaryMuscles={ident.secondaryMuscles} />
                 </div>
               )}
-              {/* Legend */}
               <div className="muscle-map-legend">
                 <span className="legend-dot primary" />Primary
                 <span className="legend-dot secondary" />Secondary
@@ -168,7 +179,6 @@
             </div>
           )}
 
-          {/* Muscle pill lists */}
           <div className="identify-muscle-lists">
             {ident.primaryMuscles && ident.primaryMuscles.length > 0 && (
               <div className="identify-muscle-group">
@@ -244,6 +254,16 @@
             )}
           </div>
         )}
+
+        {/* ── Add to Tracker ───────────────────────────────────── */}
+        <button type="button"
+                className={`identify-track-btn${trackState === 'saved' ? ' is-added' : ''}`}
+                onClick={handleAddToTracker}
+                disabled={trackState !== 'idle'}>
+          {trackState === 'saving' ? '⏳ Adding…'
+           : trackState === 'saved' ? '✓ Added to Tracker'
+           : '📊 Add to Tracker'}
+        </button>
 
       </div>
     );

@@ -21,6 +21,7 @@ import { identifyRoutes } from './routes/identify.js';
 import { sessionRoutes }  from './routes/sessions.js';
 import { profileRoutes }    from './routes/profile.js';
 import { transcribeRoutes } from './routes/transcribe.js';
+import { trackerRoutes }    from './routes/tracker.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -83,6 +84,7 @@ app.use('/api/identify',   identifyRoutes);
 app.use('/api/sessions',   sessionRoutes);
 app.use('/api/profile',    profileRoutes);
 app.use('/api/transcribe', transcribeRoutes);
+app.use('/api/tracker',    trackerRoutes);
 
 /* Serve the frontend files from the parent folder. */
 const frontendDir = path.resolve(__dirname, '..');
