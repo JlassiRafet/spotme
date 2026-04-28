@@ -37,6 +37,41 @@ const stripeConfigured = () => {
   return s && p && p !== 'price_REPLACE_ME';
 };
 
+/**
+ * Create a Stripe Checkout session for the authenticated user (shared by
+ * POST /api/subscription/checkout and POST /api/profile/upgrade).
+ * @returns {Promise<{ url: string }>}
+ */
+export async function createStripeCheckoutSession(req) {
+  const s = getStripe();
+  if (!s || !stripeConfigured()) {
+    throw new ApiError(503, 'Payment is not configured yet. Add STRIPE_SECRET_KEY and STRIPE_PRICE_ID to .env.');
+  }
+
+  const origin = req.headers.origin || `http://localhost:${process.env.PORT || 8787}`;
+  const successUrl = `${origin}/?page=plans&checkout=success&sid={CHECKOUT_SESSION_ID}`;
+  const cancelUrl  = `${origin}/?page=plans&checkout=canceled`;
+
+  const params = {
+    mode:                'subscription',
+    line_items:          [{ price: PRICE_ID(), quantity: 1 }],
+    success_url:         successUrl,
+    cancel_url:          cancelUrl,
+    allow_promotion_codes: true,
+    subscription_data:   { metadata: { spotme_user_id: String(req.user.id) } },
+    metadata:            { spotme_user_id: String(req.user.id) },
+  };
+
+  if (req.user.stripe_customer_id) {
+    params.customer = req.user.stripe_customer_id;
+  } else {
+    params.customer_email = req.user.email;
+  }
+
+  const session = await s.checkout.sessions.create(params);
+  return { url: session.url };
+}
+
 /* ── Helpers ─────────────────────────────────────────────────── */
 
 function applySubscriptionUpdate(userId, sub) {
@@ -79,35 +114,8 @@ subscriptionRoutes.get('/status', requireAuth, handler((req, res) => {
 /* ── POST /api/subscription/checkout ─────────────────────────── */
 
 subscriptionRoutes.post('/checkout', requireAuth, handler(async (req, res) => {
-  const s = getStripe();
-  if (!s || !stripeConfigured()) {
-    throw new ApiError(503, 'Payment is not configured yet. Add STRIPE_SECRET_KEY and STRIPE_PRICE_ID to .env.');
-  }
-
-  const origin = req.headers.origin || `http://localhost:${process.env.PORT || 8787}`;
-  // {CHECKOUT_SESSION_ID} is a Stripe template literal — it gets replaced with the real session id
-  const successUrl = `${origin}/?page=plans&checkout=success&sid={CHECKOUT_SESSION_ID}`;
-  const cancelUrl  = `${origin}/?page=plans&checkout=canceled`;
-
-  const params = {
-    mode:                'subscription',
-    line_items:          [{ price: PRICE_ID(), quantity: 1 }],
-    success_url:         successUrl,
-    cancel_url:          cancelUrl,
-    allow_promotion_codes: true,
-    subscription_data:   { metadata: { spotme_user_id: String(req.user.id) } },
-    metadata:            { spotme_user_id: String(req.user.id) },
-  };
-
-  // Attach to existing Stripe customer if we have one
-  if (req.user.stripe_customer_id) {
-    params.customer = req.user.stripe_customer_id;
-  } else {
-    params.customer_email = req.user.email;
-  }
-
-  const session = await s.checkout.sessions.create(params);
-  res.json({ url: session.url });
+  const { url } = await createStripeCheckoutSession(req);
+  res.json({ url });
 }));
 
 /* ── POST /api/subscription/verify ───────────────────────────── */

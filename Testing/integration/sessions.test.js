@@ -269,10 +269,14 @@ describe('PATCH /api/profile (UC-020)', () => {
 /* ─────────────────── POST /api/profile/upgrade ──────────── */
 
 describe('POST /api/profile/upgrade (UC-021)', () => {
-  it('returns 501 — upgrade not yet implemented', async () => {
+  it('returns Stripe checkout URL when payment is configured, otherwise 503', async () => {
     const res = await request(app).post('/api/profile/upgrade').set(auth());
-    expect(res.status).toBe(501);
-    expect(res.body.error).toMatch(/under development/i);
+    expect([200, 503]).toContain(res.status);
+    if (res.status === 503) {
+      expect(String(res.body.error || '')).toMatch(/not configured|Payment/i);
+    } else {
+      expect(res.body.url).toMatch(/^https:\/\//);
+    }
   });
 
   it('401 without auth', async () => {

@@ -96,11 +96,11 @@ export default function () {
     if (!ok) errorRate.add(1);
   });
 
-  /* ── Upgrade (stub: expect 501) ── */
-  group('upgrade-stub', () => {
+  /* ── Upgrade → Stripe checkout URL or 503 if not configured ── */
+  group('upgrade-checkout', () => {
     const res = http.post(`${BASE_URL}/api/profile/upgrade`, null, { headers });
     check(res, {
-      'upgrade 501 (expected)': r => r.status === 501,
+      'upgrade 200 or 503': r => r.status === 200 || r.status === 503,
     });
   });
 

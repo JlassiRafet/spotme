@@ -54,13 +54,12 @@
   ];
 
   const PRO_FEATURES = [
-    { label: 'Unlimited AI coaching', locked: false },
-    { label: 'Full session history', locked: false },
-    { label: 'Progress tracking & PR charts', locked: false },
-    { label: 'Adaptive weekly programming', locked: false },
-    { label: 'Priority response speed', locked: false },
-    { label: 'Goal streak analytics', locked: false },
-    { label: 'Advanced nutrition guidance', locked: false },
+    { label: 'Private 1:1 coaching with a real SpotMe coach (not AI-only)', locked: false },
+    { label: 'Scheduled video or phone calls included with your coach', locked: false },
+    { label: 'Human-written programming, accountability & form guidance', locked: false },
+    { label: 'Unlimited AI coaching in the app between live sessions', locked: false },
+    { label: 'Full session history & progress shared with your coach', locked: false },
+    { label: 'Goal streak analytics & nutrition guidance', locked: false },
     { label: 'Export workout data (CSV / PDF)', locked: false },
   ];
 
@@ -87,7 +86,7 @@
           </button>
           <div className="pro-upsell-crown"><CrownIcon /></div>
           <h3 className="pro-upsell-title">Unlock SpotMe Pro</h3>
-          <p className="pro-upsell-sub">Get unlimited coaching, full history, and advanced tracking.</p>
+          <p className="pro-upsell-sub">Pro adds private coaching and live calls with a real coach — plus unlimited AI in the app between sessions.</p>
           <ul className="pro-upsell-list">
             {PRO_FEATURES.slice(0, 5).map((f, i) => (
               <li key={i}><CheckIcon pro /> {f.label}</li>
@@ -257,7 +256,7 @@
                 <span className="plan-price-period">/ month</span>
               </div>
             </div>
-            <p className="plan-desc">The full coaching suite. Unlimited AI, tracking, and more.</p>
+            <p className="plan-desc">Private coaching and scheduled calls with a real coach, with unlimited AI chat in the app between sessions — plus full tracking.</p>
             <div className="plan-divider" />
             <ul className="plan-features">
               {PRO_FEATURES.map((f, i) => (
@@ -313,7 +312,7 @@
         </div>
 
         <p className="plans-footnote">
-          All plans include end-to-end encryption and data privacy.
+          Pro centres on private coaching and calls with a real coach; session frequency is confirmed after signup. All plans include end-to-end encryption.
           Billed monthly. Cancel anytime — no questions asked.
         </p>
       </div>

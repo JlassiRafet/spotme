@@ -19,14 +19,12 @@
   ];
 
   const PRO_FEATURES = [
-    'Unlimited AI coaching',
-    'Full session history',
-    'Progress tracking & PR charts',
-    'Adaptive weekly programming',
-    'Priority response speed',
-    'Goal streak analytics',
-    'Advanced nutrition guidance',
-    'Export workout data'
+    'Private 1:1 coaching with a real SpotMe coach (not AI-only)',
+    'Scheduled video or phone calls included with your coach',
+    'Human-written programming, form checks & accountability',
+    'Unlimited AI coaching in the app between live sessions',
+    'Full session history & progress shared with your coach',
+    'Goal streak analytics & export workout data'
   ];
 
   function MembershipPage({ profile, onBack }) {
@@ -35,12 +33,18 @@
     const [message, setMessage] = useState(null);
 
     const upgrade = async () => {
+      setMessage(null);
       setUpgrading(true);
-      const r = await SpotMe.api.requestUpgrade();
-      setUpgrading(false);
-      setMessage(r.ok
-        ? 'Upgrade flow not yet available — coming soon.'
-        : (r.error || 'Could not start upgrade.'));
+      try {
+        const r = await SpotMe.api.requestUpgrade();
+        if (r.ok && r.data?.url) {
+          window.location.href = r.data.url;
+          return;
+        }
+        setMessage(r.error || 'Could not start checkout.');
+      } finally {
+        setUpgrading(false);
+      }
     };
 
     return (
@@ -73,8 +77,8 @@
             </div>
             <div className="fit-membership-sub">
               {isPro
-                ? 'You have access to every coaching feature, unlimited history, and priority response speed.'
-                : 'No credit card needed. Cancel anytime.'}
+                ? 'Your Pro membership includes private coaching and live calls with a real coach — plus full app access.'
+                : 'Pro adds private coaching and scheduled calls with a real human coach — on top of AI in the app. No credit card to start on Free. Cancel anytime.'}
             </div>
           </div>
 
@@ -118,7 +122,7 @@
           )}
 
           <p style={{ marginTop: 24, fontSize: '0.78rem', color: 'var(--ink-3)' }}>
-            All plans include end-to-end encryption. Billed monthly. Cancel anytime.
+            Pro is built around private coaching and calls with a real coach — availability and session frequency are confirmed after you subscribe. All plans include end-to-end encryption. Billed monthly. Cancel anytime.
           </p>
         </div>
       </div>
