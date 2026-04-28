@@ -6,7 +6,7 @@
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
   const { useState, useEffect, useRef } = React;
-  const { EyeIcon, GoogleIcon, ChevronIcon } = SpotMe.icons;
+  const { EyeIcon, GoogleIcon, ChevronIcon, SunIcon, MoonIcon } = SpotMe.icons;
 
   /* ------------------------------------------------------------------ */
   /* Country data — iso, name, dial code, expected digit count           */
@@ -472,6 +472,41 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* Theme hook + pill toggle                                             */
+  /* ------------------------------------------------------------------ */
+  function useTheme() {
+    const [theme, setTheme] = useState(() =>
+      document.documentElement.getAttribute('data-theme') || 'dark'
+    );
+    function toggle() {
+      const next = theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('spotme-theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+      setTheme(next);
+    }
+    return [theme, toggle];
+  }
+
+  function ThemePill() {
+    const [theme, toggle] = useTheme();
+    return (
+      <button
+        type="button"
+        className="theme-pill-btn"
+        onClick={toggle}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span className="theme-pill-label">{theme === 'dark' ? 'Dark' : 'Light'}</span>
+        <span className="theme-pill-knob">
+          <span style={{ width: 16, height: 16, display: 'inline-flex' }}>
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </span>
+        </span>
+      </button>
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
   /* Unit conversions                                                     */
   /* ------------------------------------------------------------------ */
   function convertWeight(value, fromUnit, toUnit) {
@@ -494,6 +529,7 @@
   SpotMe.primitives = {
     TextInput, PasswordInput, PrimaryButton, GoogleButton, Divider,
     CountryDropdown, BasicDropdown, SegmentedGroup, MeasureField,
-    COUNTRY_DATA, convertWeight, convertHeight
+    COUNTRY_DATA, convertWeight, convertHeight,
+    useTheme, ThemePill
   };
 })();

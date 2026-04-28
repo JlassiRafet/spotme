@@ -41,7 +41,10 @@
           window.location.href = r.data.url;
           return;
         }
-        setMessage(r.error || 'Could not start checkout.');
+        const isUnconfigured = r.status === 503 || (r.error || '').includes('not configured');
+        setMessage(isUnconfigured
+          ? 'Pro payments are coming soon — email us at rafet.main@gmail.com to get early access.'
+          : (r.error || 'Could not start checkout. Please try again.'));
       } finally {
         setUpgrading(false);
       }

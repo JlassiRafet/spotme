@@ -6,6 +6,7 @@
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
   const { BellIcon, DumbbellIcon, LeafIcon, SparkleIcon } = SpotMe.icons;
+  const { ThemePill } = SpotMe.primitives;
 
   function Avatar({ profile, size = 44, onClick }) {
     const initial = (profile?.firstName || '?').charAt(0).toUpperCase();
@@ -64,6 +65,12 @@
     return (
       <div className="fit-home">
         <div className="fit-page">
+
+          {/* Brand bar: SpotMe wordmark + theme pill corner */}
+          <div className="home-brand-bar">
+            <div className="home-wordmark">SpotMe</div>
+            <ThemePill />
+          </div>
 
           {/* Header */}
           <header className="fit-hero" style={{ marginBottom: 8 }}>
