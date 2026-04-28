@@ -63,12 +63,16 @@
     let response;
     const timeoutCtrl = new AbortController();
     const timeoutId = setTimeout(() => timeoutCtrl.abort(), 30000);
+    const isUncachedGet = method === 'GET' && (
+      path.startsWith('/api/tracker')
+    );
     try {
       response = await fetch(BASE + path, {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined,
-        signal: timeoutCtrl.signal
+        signal: timeoutCtrl.signal,
+        cache: isUncachedGet ? 'no-store' : 'default',
       });
     } catch (e) {
       if (e?.name === 'AbortError') {
@@ -280,16 +284,18 @@
   }
 
   function getTracker(days = 7) {
-    return request(`/api/tracker?days=${days}`);
+    const q = `_=${Date.now()}`;
+    return request(`/api/tracker?days=${days}&${q}`);
   }
 
   function getTrackerStats() {
-    return request('/api/tracker/stats');
+    return request(`/api/tracker/stats?_=${Date.now()}`);
   }
 
-  function deleteWorkoutLog(id) {
-    return request(`/api/tracker/${id}`, { method: 'DELETE' });
-  }
+function deleteWorkoutLog(id) {
+  const q = encodeURIComponent(String(id));
+  return request(`/api/tracker/${q}`, { method: 'DELETE' });
+}
 
   /* ---------- programs catalogue ---------- */
 

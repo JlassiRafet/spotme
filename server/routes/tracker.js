@@ -276,7 +276,15 @@ function calcPRs(logs) {
     for (const s of sets) {
       const w = Number(s.weight) || 0;
       if (w > 0 && (!best[log.exercise] || w > best[log.exercise].weight)) {
-        best[log.exercise] = { weight: w, reps: s.reps, date: log.logged_at };
+        const wid = Number(log.id);
+        const entry = {
+          weight: w,
+          reps: s.reps,
+          date: log.logged_at,
+          workoutLogId: Number.isFinite(wid) ? wid : undefined,
+          workoutId: Number.isFinite(wid) ? wid : undefined,
+        };
+        best[log.exercise] = entry;
       }
     }
   }

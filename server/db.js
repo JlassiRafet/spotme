@@ -309,7 +309,7 @@ export const stmts = {
     ORDER BY d DESC
   `),
   getAllExercisePRs:   prep(`
-    SELECT exercise, sets_json, logged_at
+    SELECT id, exercise, sets_json, logged_at
     FROM workout_logs
     WHERE user_id = ?
     ORDER BY logged_at DESC

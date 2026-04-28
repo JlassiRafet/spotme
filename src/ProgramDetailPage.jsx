@@ -258,6 +258,17 @@
       });
       setFinishing(false);
       if (r.ok) {
+        const cat = String(program.category || '').toLowerCase();
+        let muscleGroup = '';
+        if (cat.includes('muscle') || cat.includes('strength')) muscleGroup = 'Chest';
+        else if (cat.includes('cardio')) muscleGroup = 'Legs';
+        else if (cat.includes('diet')) muscleGroup = 'Core';
+        SpotMe.api.logWorkout({
+          exercise: `${program.name} — session`,
+          sets: [{ reps: 1, weight: 0 }],
+          muscleGroup,
+          source: 'program'
+        }).catch(() => {});
         onNavigate('completion', {
           runId,
           program,

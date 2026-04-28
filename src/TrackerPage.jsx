@@ -3,9 +3,8 @@
    Workout Memory + Progress Engine. Contains:
      • StreakCard      — daily streak with fire animation
      • StatsCard       — weekly summary + PRs
-     • QuickAddCard    — zero-friction workout logger
-     • TrackerTimeline — daily-grouped workout history
-     • SmartSuggestions — contextual nudges
+   • QuickAddCard    — zero-friction workout logger
+   • SmartSuggestions — contextual nudges
    ============================================================ */
 
 (function () {
@@ -22,52 +21,216 @@
     { id: 'core',      label: 'Core',      emoji: '🎯' },
   ];
 
-  /* ── Date helpers ─────────────────────────────────────────── */
-  function friendlyDay(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00');
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const diff = (now - d) / 86400000;
-    if (diff < 1 && diff >= 0) return 'Today';
-    if (diff >= 1 && diff < 2) return 'Yesterday';
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  /* ── Greeting header (mirrors Image 1 "Hello, Kate!") ─── */
+  function TrackerGreeting({ name }) {
+    const first = (name || '').trim().split(' ')[0] || 'there';
+    return (
+      <header className="tracker-greeting">
+        <div className="tracker-greeting-eyebrow">Hello, {first}!</div>
+        <h1 className="tracker-greeting-title">This is your progress.</h1>
+      </header>
+    );
   }
 
-  function formatSets(sets) {
-    if (!sets || !sets.length) return '—';
-    if (sets.length === 1) {
-      const s = sets[0];
-      if (s.weight > 0) return `${s.reps} reps × ${s.weight}kg`;
-      return `${s.reps} reps`;
-    }
-    const hasWeight = sets.some(s => s.weight > 0);
-    if (hasWeight) {
-      return sets.map(s => `${s.reps}×${s.weight}kg`).join(', ');
-    }
-    return sets.map(s => s.reps).join(', ') + ' reps';
+  /* ── Volume goal card — partial-arc ring (Image 1 "Calories") ── */
+  function VolumeGoalCard({ stats }) {
+    const weekly = stats?.weeklyActivity || [];
+    const total = weekly.reduce((s, d) => s + (d.count || 0), 0);
+    const goal = 5;
+    const ratio = Math.max(0, Math.min(total / goal, 1));
+    const pct = Math.round(ratio * 100);
+
+    const R = 36;
+    const C = 2 * Math.PI * R;
+    const dash = ratio * C;
+
+    return (
+      <div className="chart-card volume-goal-card">
+        <h4 className="chart-title">Weekly Goal</h4>
+        <div className="volume-goal-body">
+          <svg viewBox="0 0 100 100" className="volume-goal-svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="volGoalGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#E57399" />
+                <stop offset="100%" stopColor="#c084fc" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r={R}
+                    fill="transparent"
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth="9" />
+            <circle cx="50" cy="50" r={R}
+                    fill="transparent"
+                    stroke="url(#volGoalGrad)"
+                    strokeWidth="9"
+                    strokeLinecap="round"
+                    strokeDasharray={`${dash} ${C}`}
+                    transform="rotate(-90 50 50)"
+                    className="volume-goal-arc" />
+          </svg>
+          <div className="volume-goal-center">
+            <div className="volume-goal-pct">{pct}%</div>
+          </div>
+        </div>
+        <div className="volume-goal-meta">
+          <strong>{total}</strong>
+          <span>of {goal} workouts</span>
+        </div>
+      </div>
+    );
   }
 
   /* ── Personal Records Card ───────────────────────────────── */
-  function PRCard({ prs }) {
+  function PRCard({ prs, onDeleted }) {
+    const [deletingId, setDeletingId] = useState(null);
+    const [pendingDelete, setPendingDelete] = useState(null); // { pr, workoutId }
+    const [deleteError, setDeleteError] = useState('');
+
+    const resolveWorkoutId = (pr) => {
+      const w =
+        pr.workoutId ??
+        pr.workoutLogId ??
+        pr.workout_id ??
+        pr.workout_log_id;
+      if (w === null || w === undefined || w === '') return null;
+      const n = Number(w);
+      return Number.isFinite(n) && n > 0 ? n : null;
+    };
+
+    const closeDeleteModal = useCallback(() => {
+      setPendingDelete(null);
+      setDeleteError('');
+    }, []);
+
+    useEffect(() => {
+      if (!pendingDelete) return undefined;
+      const onKey = (e) => {
+        if (e.key === 'Escape' && deletingId === null) closeDeleteModal();
+      };
+      document.addEventListener('keydown', onKey);
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.removeEventListener('keydown', onKey);
+        document.body.style.overflow = prev;
+      };
+    }, [pendingDelete, deletingId, closeDeleteModal]);
+
+    const openDeleteModal = (pr) => {
+      const workoutId = resolveWorkoutId(pr);
+      setDeleteError('');
+      setPendingDelete({ pr, workoutId });
+    };
+
+    const executeDelete = async () => {
+      const wid = pendingDelete?.workoutId;
+      if (!wid) return;
+      setDeletingId(wid);
+      const r = await SpotMe.api.deleteWorkoutLog(wid);
+      setDeletingId(null);
+      if (!r.ok) {
+        setDeleteError(r.error || 'Something went wrong. Please try again.');
+        return;
+      }
+      closeDeleteModal();
+      if (typeof onDeleted === 'function') await onDeleted();
+    };
+
     if (!prs || prs.length === 0) return null;
+
     return (
-      <div className="chart-card prs-card">
-        <h4 className="chart-title">Personal Records</h4>
-        <div className="prs-grid">
-          {prs.map((pr, i) => (
-            <div key={i} className="pr-card">
-              <div className="pr-info">
-                <span className="pr-name">{pr.exercise}</span>
-                <span className="pr-date">{new Date(pr.date * 1000).toLocaleDateString()}</span>
-              </div>
-              <div className="pr-stats">
-                <div className="pr-weight">{pr.weight}kg</div>
-                <div className="pr-delta">↑ New Peak</div>
+      <>
+        <div className="chart-card prs-card">
+          <h4 className="chart-title">Personal Records</h4>
+          <div className="prs-grid">
+            {prs.map((pr, i) => {
+              const workoutId = resolveWorkoutId(pr);
+              return (
+                <div key={workoutId ?? `pr-${i}-${pr.exercise}`} className="pr-card">
+                  <div className="pr-info">
+                    <span className="pr-name">{pr.exercise}</span>
+                    <span className="pr-date">{new Date(pr.date * 1000).toLocaleDateString()}</span>
+                  </div>
+                  <div className="pr-card-right">
+                    <div className="pr-stats">
+                      <div className="pr-weight">{pr.weight}kg</div>
+                      <div className="pr-delta">↑ New Peak</div>
+                    </div>
+                    {workoutId != null && (
+                      <button
+                        type="button"
+                        className="pr-delete-btn"
+                        disabled={deletingId === workoutId}
+                        onClick={() => openDeleteModal(pr)}
+                        aria-label={`Delete workout for ${pr.exercise}`}
+                        title="Delete this workout log"
+                      >
+                        {deletingId === workoutId ? '…' : '×'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {pendingDelete && pendingDelete.pr && pendingDelete.workoutId != null && (
+          <div
+            className="pr-delete-modal-overlay"
+            onClick={(e) => {
+              if (deletingId !== null) return;
+              if (e.target === e.currentTarget) closeDeleteModal();
+            }}
+          >
+            <div
+              className="pr-delete-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pr-delete-modal-title"
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 id="pr-delete-modal-title" className="pr-delete-modal-title">Remove workout log?</h3>
+
+              <p className="pr-delete-modal-lead">
+                This deletes the logged session for{' '}
+                <strong>{pendingDelete.pr.exercise}</strong>
+                {' '}·{' '}
+                <strong>{pendingDelete.pr.weight}&nbsp;kg</strong>
+                {' '}·{' '}
+                {new Date(pendingDelete.pr.date * 1000).toLocaleDateString()}
+              </p>
+
+              <p className="pr-delete-modal-body">
+                Weekly stats and your PR board update after removal. You can’t undo from the app.
+              </p>
+
+              {deleteError !== '' ? (
+                <div className="pr-delete-modal-error" role="alert">{deleteError}</div>
+              ) : null}
+
+              <div className="pr-delete-modal-actions">
+                <button
+                  type="button"
+                  className="pr-delete-modal-btn pr-delete-modal-btn-secondary"
+                  onClick={closeDeleteModal}
+                  disabled={deletingId !== null}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="pr-delete-modal-btn pr-delete-modal-btn-danger"
+                  onClick={() => executeDelete()}
+                  disabled={deletingId !== null}
+                >
+                  {deletingId !== null ? 'Removing…' : 'Remove log'}
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -97,10 +260,16 @@
     const inputRef = useRef(null);
 
     const filtered = useMemo(() => {
-      if (!exercise.trim() || !recentExercises) return recentExercises || [];
+      if (!exercise.trim() || !recentExercises) return [];
       const q = exercise.toLowerCase();
       return recentExercises.filter(r => r.exercise.toLowerCase().includes(q));
     }, [exercise, recentExercises]);
+
+    const suggestRows = Math.min(6, filtered.length);
+    const suggestionsOpen = showSuggestions && suggestRows > 0;
+    const ROW_H = 44;
+    const QUICK_ADD_WRAP_MB = 14;
+    const suggestReserve = suggestionsOpen ? QUICK_ADD_WRAP_MB + 4 + suggestRows * ROW_H : 0;
 
     const pickExercise = (rec) => {
       setExercise(rec.exercise);
@@ -150,14 +319,16 @@
 
       if (r.ok) {
         setSaved(true);
+        if (typeof onLog === 'function') {
+          await onLog();
+        }
         setTimeout(() => {
           setExercise('');
           setMuscleGroup('');
           setSets([{ reps: '', weight: '' }]);
           setSaved(false);
           setExpanded(false);
-          onLog();
-        }, 800);
+        }, 450);
       }
     };
 
@@ -169,7 +340,10 @@
         </div>
 
         {/* Exercise name */}
-        <div className="quick-add-exercise-wrap">
+        <div
+          className={`quick-add-exercise-wrap${suggestionsOpen ? ' is-suggesting' : ''}`}
+          style={suggestionsOpen ? { marginBottom: suggestReserve } : undefined}
+        >
           <input
             ref={inputRef}
             type="text"
@@ -180,7 +354,7 @@
             onFocus={() => { setShowSuggestions(true); setExpanded(true); }}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           />
-          {showSuggestions && filtered.length > 0 && (
+          {suggestionsOpen && (
             <div className="quick-add-suggestions">
               {filtered.slice(0, 6).map((r, i) => (
                 <button key={i} type="button" className="quick-add-suggestion"
@@ -245,93 +419,12 @@
     );
   }
 
-  /* ── ExerciseCard (single workout entry in timeline) ──────── */
-  function ExerciseCard({ workout, onDelete }) {
-    const [confirming, setConfirming] = useState(false);
-
-    const handleDelete = async () => {
-      if (!confirming) { setConfirming(true); return; }
-      await SpotMe.api.deleteWorkoutLog(workout.id);
-      onDelete();
-    };
-
-    const sourceIcon = workout.source === 'identify' ? '📷'
-                     : workout.source === 'chat'     ? '💬'
-                     : null;
-
-    return (
-      <div className="exercise-card">
-        <div className="exercise-card-main">
-          <div className="exercise-card-name">
-            {sourceIcon && <span className="exercise-source-icon">{sourceIcon}</span>}
-            {workout.exercise}
-          </div>
-          <div className="exercise-card-detail">
-            {formatSets(workout.sets)}
-          </div>
-          {workout.muscleGroup && (
-            <span className="exercise-card-muscle">{workout.muscleGroup}</span>
-          )}
-        </div>
-        <button type="button"
-                className={`exercise-delete-btn${confirming ? ' is-confirming' : ''}`}
-                onClick={handleDelete}
-                onBlur={() => setConfirming(false)}
-                aria-label="Delete workout">
-          {confirming ? '✓' : '×'}
-        </button>
-      </div>
-    );
-  }
-
-  /* ── TrackerTimeline ──────────────────────────────────────── */
-  function TrackerTimeline({ days, onRefresh }) {
-    const sortedDays = useMemo(() => {
-      if (!days) return [];
-      return Object.entries(days)
-        .sort((a, b) => b[0].localeCompare(a[0]));
-    }, [days]);
-
-    if (sortedDays.length === 0) {
-      return (
-        <div className="timeline-empty">
-          <div className="timeline-empty-icon">🏋️</div>
-          <div className="timeline-empty-title">No workouts yet</div>
-          <div className="timeline-empty-text">
-            Log your first exercise above to start tracking your progress!
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="tracker-timeline">
-        <h3 className="timeline-title">Recent Activity</h3>
-        {sortedDays.map(([date, workouts]) => (
-          <div key={date} className="timeline-day">
-            <div className="timeline-day-header">
-              <span className="timeline-day-label">{friendlyDay(date)}</span>
-              <span className="timeline-day-count">
-                {workouts.length} exercise{workouts.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <div className="timeline-day-cards">
-              {workouts.map(w => (
-                <ExerciseCard key={w.id} workout={w} onDelete={onRefresh} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   /* ── TrackerPage (main) ──────────────────────────────────── */
   function TrackerPage({ profile }) {
-    const [days, setDays] = useState(null);
     const [recentExercises, setRecentExercises] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [dataVersion, setDataVersion] = useState(0);
 
     const loadAll = useCallback(async () => {
       const [trackerRes, statsRes] = await Promise.all([
@@ -339,11 +432,13 @@
         SpotMe.api.getTrackerStats()
       ]);
       if (trackerRes.ok) {
-        setDays(trackerRes.data.days);
         setRecentExercises(trackerRes.data.recentExercises || []);
       }
       if (statsRes.ok) {
         setStats(statsRes.data.stats);
+      }
+      if (trackerRes.ok || statsRes.ok) {
+        setDataVersion((v) => v + 1);
       }
       setLoading(false);
     }, []);
@@ -361,45 +456,50 @@
       );
     }
 
-    return (
-      <div className="tracker-page">
-        <div className="tracker-content">
-          {/* Dashboard Grid */}
-          <div className="tracker-dashboard-grid">
-            <div className="grid-full">
-              <SpotMe.StreakCard
-                streak={stats?.streak || 0}
-                bestStreak={stats?.bestStreak || 0}
-              />
-            </div>
+    const firstName = profile?.firstName || profile?.first_name || profile?.name || '';
 
+    const chartKey = String(dataVersion);
+
+    return (
+      <div className="tracker-page tracker-page--v2">
+        <div className="tracker-content">
+          <TrackerGreeting name={firstName} />
+
+          {/* Top row: streak ring + activity pulse */}
+          <div className="tracker-row tracker-row--two">
+            <SpotMe.StreakCard
+              streak={stats?.streak || 0}
+              bestStreak={stats?.bestStreak || 0}
+              key={`streak-${chartKey}`}
+            />
             {stats?.weeklyActivity && (
               <SpotMe.WeeklyChart
+                key={`wk-${chartKey}`}
                 data={stats.weeklyActivity}
                 trend={stats.trendPercent || 0}
               />
             )}
+          </div>
 
+          {/* Full-width dual-line trend */}
+          {stats?.volumeHistory && (
+            <SpotMe.TrendChart key={`vol-${chartKey}`} data={stats.volumeHistory} />
+          )}
+
+          {/* Bottom row: muscle rings + weekly goal */}
+          <div className="tracker-row tracker-row--two">
             {stats?.muscleDistribution && (
               <SpotMe.MuscleChart
+                key={`muscle-${chartKey}`}
                 data={stats.muscleDistribution}
               />
             )}
-
-            {stats?.volumeHistory && (
-              <div className="grid-full">
-                <SpotMe.TrendChart
-                  data={stats.volumeHistory}
-                />
-              </div>
-            )}
-
-            {stats?.prs && (
-              <div className="grid-full">
-                <PRCard prs={stats.prs} />
-              </div>
-            )}
+            <VolumeGoalCard stats={stats} key={`goal-${chartKey}`} />
           </div>
+
+          {stats?.prs && stats.prs.length > 0 && (
+            <PRCard prs={stats.prs} onDeleted={loadAll} />
+          )}
 
           {/* Smart suggestions */}
           <SmartSuggestions suggestions={stats?.suggestions} />
@@ -410,9 +510,6 @@
             onLog={loadAll}
             weightUnit={profile?.weightUnit || 'kg'}
           />
-
-          {/* Timeline */}
-          <TrackerTimeline days={days} onRefresh={loadAll} />
         </div>
       </div>
     );
