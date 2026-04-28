@@ -3073,11 +3073,11 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .profile-row-btn:hover { background: rgba(255, 255, 255, 0.06); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
 .profile-row-btn svg { width: 14px; height: 14px; }
 .profile-row-btn.primary {
-  border-color: rgba(150, 200, 255, 0.4);
-  background: linear-gradient(135deg, rgba(120, 175, 255, 0.24) 0%, rgba(80, 130, 230, 0.18) 100%);
+  border-color: rgba(0, 229, 160, 0.35);
+  background: linear-gradient(135deg, rgba(0, 229, 160, 0.2) 0%, rgba(0, 180, 110, 0.15) 100%);
   color: white;
 }
-.profile-row-btn.primary:hover { box-shadow: 0 0 18px rgba(80, 140, 255, 0.3); }
+.profile-row-btn.primary:hover { box-shadow: 0 0 18px rgba(0, 229, 160, 0.3); }
 .profile-row-btn.danger { color: #ff9a9a; border-color: rgba(255, 120, 120, 0.25); }
 .profile-row-btn.danger:hover { background: rgba(255, 80, 80, 0.12); color: #ffb3b3; }
 
