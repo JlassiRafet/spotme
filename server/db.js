@@ -606,6 +606,123 @@ function patchDietMacro() {
 }
 patchDietMacro();
 
+function patchDietPrograms() {
+  sqlDb.run(`DELETE FROM program_sessions WHERE program_id IN ('diet-vegetarian','diet-keto','diet-mediterranean')`);
+  sqlDb.run(`DELETE FROM programs WHERE id IN ('diet-vegetarian','diet-keto','diet-mediterranean')`);
+
+  const NEW_DIET_PROGRAMS = [
+    {
+      id: 'diet-vegetarian', category: 'diet', name: 'Vegetarian Plan',
+      difficulty: 'All levels', cover_color: 'lime',
+      cover_image:  'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=70',
+      hero_image:   'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 7, total_calories: 0,
+      description: 'A 7-day plant-forward eating guide — complete proteins without meat, iron-rich meals, B12 and D3 support, and meal-prep strategies for muscle and performance.'
+    },
+    {
+      id: 'diet-keto', category: 'diet', name: 'Keto Plan',
+      difficulty: 'Intermediate', cover_color: 'orange',
+      cover_image:  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=70',
+      hero_image:   'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 7, total_calories: 0,
+      description: 'A 7-day ketogenic protocol — fat adaptation, electrolyte management, net carb targets, meal structure and how to train effectively while in ketosis.'
+    },
+    {
+      id: 'diet-mediterranean', category: 'diet', name: 'Mediterranean Diet',
+      difficulty: 'All levels', cover_color: 'mint',
+      cover_image:  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=70',
+      hero_image:   'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=70',
+      total_minutes: 7, total_calories: 0,
+      description: 'A 7-day Mediterranean eating plan — olive oil as primary fat, oily fish twice a week, legumes daily, whole grains and anti-inflammatory foods for long-term health and performance.'
+    }
+  ];
+
+  const VEGETARIAN_SESSIONS = [
+    { id: 'veg-s1', ord: 1, name: 'Day 1 — Complete Proteins Without Meat', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: protein completeness, amino acid pairing.\n\nVegetarian proteins are often incomplete — they lack one or more essential amino acids. The fix is simple: pair complementary sources.\n\n• Rice + legumes (lentils, beans, chickpeas) — the classic pair. Together they provide all 9 essential amino acids.\n• Eggs + whole grain toast — 2 eggs on sourdough gives 16 g complete protein.\n• Greek yogurt (200 g) + hemp seeds (30 g) — 28 g protein, all amino acids covered.\n• Cottage cheese (150 g) — naturally complete due to casein content, 18 g protein.\n\nAim for 1.6–2.0 g protein per kg of bodyweight. As a vegetarian this is achievable — it just requires planning. Log your protein today and see where you land.' },
+    { id: 'veg-s2', ord: 2, name: 'Day 2 — Iron Without Red Meat', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: iron absorption, non-haem iron sources.\n\nPlant-based iron (non-haem) is absorbed at only 2–20% versus 20–30% for meat iron. You can close the gap:\n\n• Always pair iron-rich foods with vitamin C. Lentil soup + a squeeze of lemon doubles iron absorption.\n• Iron-rich plant foods: lentils (6.6 mg/100 g cooked), spinach (2.7 mg/100 g), tofu (3.4 mg/100 g), pumpkin seeds (8.8 mg/100 g).\n• Avoid coffee or tea within 1 hour of iron-rich meals — tannins block absorption by up to 60%.\n• Calcium and iron compete for absorption — do not combine a big dairy serving with your main iron meal.\n\nMen need ~8 mg/day, women ~18 mg/day. Track today and see if you are hitting your target.' },
+    { id: 'veg-s3', ord: 3, name: 'Day 3 — B12 and D3 Essentials', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: B12 supplementation, vitamin D3 sources.\n\nThese are the two nutrients most commonly deficient in vegetarians:\n\nVitamin B12:\n• Found almost exclusively in animal products. Eggs and dairy provide small amounts but rarely enough.\n• Supplement: 1,000 mcg methylcobalamin daily. B12 deficiency causes fatigue, poor cognition and nerve damage — symptoms appear slowly over months.\n\nVitamin D3:\n• Sun exposure (15–20 min midday on bare skin) is the best source, but seasonal.\n• Food sources are limited: eggs, fortified plant milks, UV-exposed mushrooms.\n• Supplement: 2,000–4,000 IU D3 daily, taken with a fat-containing meal.\n\nConsider a blood test every 6–12 months to confirm your levels are in range.' },
+    { id: 'veg-s4', ord: 4, name: 'Day 4 — High-Protein Meal Templates', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: daily meal structure, protein distribution.\n\nSpread protein evenly across 4–5 meals. The body can only synthesise muscle from ~40 g protein per sitting.\n\nBreakfast (30–35 g): Greek yogurt parfait — 200 g yogurt + 30 g granola + berries + 30 g hemp seeds.\nLunch (35–40 g): Tofu stir-fry — 200 g firm tofu + edamame + brown rice.\nSnack (20–25 g): Cottage cheese (150 g) + 1 tbsp peanut butter + 1 banana.\nDinner (40–45 g): Lentil dal — 200 g cooked red lentils + basmati rice + spinach + yogurt raita.\n\nThis template hits 125–145 g protein for a 75 kg athlete at 1.7–1.9 g/kg. Adjust portions to match your target weight and activity level.' },
+    { id: 'veg-s5', ord: 5, name: 'Day 5 — Omega-3 Without Fish', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: ALA, EPA and DHA — omega-3 fatty acids.\n\n• ALA (flaxseeds, chia seeds, walnuts) converts to EPA/DHA at only 5–10% — not enough on its own.\n• Best vegetarian EPA/DHA source: algal oil supplement (500–1,000 mg/day). Algae is where fish get their omega-3 from.\n• Daily ALA foods: 1 tbsp ground flaxseed on porridge (2.3 g ALA), 30 g walnuts (2.6 g ALA), 2 tbsp chia seeds (5 g ALA).\n\nCombine daily ALA-rich foods with an algal oil supplement for complete omega-3 coverage.' },
+    { id: 'veg-s6', ord: 6, name: 'Day 6 — Pre and Post Workout Nutrition', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: workout fuel, recovery nutrition (vegetarian-specific).\n\nPre-workout (60–90 min before):\n• Banana + 2 tbsp peanut butter + glass of oat milk — fast carbs, moderate protein.\n• Oat porridge (80 g dry) + scoop of plant protein — sustained energy for longer sessions.\n\nPost-workout (within 45 min):\n• Chocolate oat milk (400 ml) — ~20 g protein, 50 g carbs. Surprisingly effective.\n• Tofu scramble on sourdough — 200 g firm tofu + nutritional yeast + vegetables, 35 g protein.\n\nFor muscle building, the post-workout meal is the most important of the day. Never train and then wait hours to eat.' },
+    { id: 'veg-s7', ord: 7, name: 'Day 7 — Weekly Meal Prep Strategy', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: consistency, weekly planning, batch cooking.\n\nSunday prep checklist (90 minutes):\n✓ Cook a large batch of lentils or chickpeas (500 g dry) — base for 4–5 lunches/dinners\n✓ Cook brown rice or quinoa (400 g dry)\n✓ Boil 8–10 eggs — grab-and-go protein for 3 days\n✓ Prep overnight oats in 3 jars — 3 breakfasts done\n✓ Chop vegetables for stir-fries\n✓ Mix a trail mix of nuts and seeds for snacks\n\nWith this prep done, hitting your protein and nutrient targets for 5 days becomes almost automatic. The decision fatigue is removed.' }
+  ];
+
+  const KETO_SESSIONS = [
+    { id: 'keto-s1', ord: 1, name: 'Day 1 — What Keto Actually Is', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: ketosis basics, net carb calculation.\n\nKetosis is a metabolic state where your body burns fat (as ketones) instead of glucose. To enter and stay in ketosis:\n\n• Net carb limit: 20–25 g/day. Net carbs = total carbs minus fibre minus sugar alcohols.\n• Macros: 70–75% fat, 20–25% protein, 5% carbs.\n• Takes 2–4 days to enter ketosis, 3–6 weeks to become fully fat-adapted.\n\nNet carb reference:\n• 1 cup broccoli = 4 g net carbs ✓\n• 1 avocado = 2 g net carbs ✓\n• 1 slice bread = 14 g net carbs ✗\n• 1 banana = 24 g net carbs ✗ — your entire daily allowance\n\nToday, track every gram of carbohydrate you eat. Most people are shocked at how many hidden carbs they consume.' },
+    { id: 'keto-s2', ord: 2, name: 'Day 2 — The Keto Flu and How to Beat It', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: electrolyte protocol — sodium, potassium, magnesium.\n\nDays 2–5 are the hardest. As carbs drop, kidneys excrete sodium rapidly, dragging other electrolytes with it. This causes headache, fatigue, brain fog and cramps — the keto flu.\n\nThis is not a sign keto is wrong. Fix it:\n\n• Sodium: add 2–3 g extra salt per day. This is the most impactful change.\n• Potassium: avocado (700 mg each), leafy greens, salmon. Target 3,000–4,500 mg/day.\n• Magnesium: 300–400 mg supplement before bed — also improves sleep and reduces cramps.\n\nPractical: drink 1 cup of salted bone broth or electrolyte water (no sugar) every morning during the first week. This single habit eliminates most keto flu symptoms.' },
+    { id: 'keto-s3', ord: 3, name: 'Day 3 — Keto Food List and Meal Templates', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: approved foods, daily meal structure.\n\nEAT FREELY:\n• Fats: olive oil, butter, avocado oil, avocados, macadamia nuts, pecans\n• Protein: beef, lamb, chicken (skin-on), salmon, sardines, eggs, full-fat dairy\n• Vegetables: leafy greens, courgette, broccoli, cauliflower, cabbage, mushrooms\n\nNEVER EAT:\n• All grains, legumes, fruit (except small berries), root vegetables, bread, pasta, rice\n\nSample day (16 g net carbs total):\n• Breakfast: 3 eggs scrambled in butter + 2 bacon rashers + spinach (2 g)\n• Lunch: large salad with grilled chicken, olive oil, avocado, feta (6 g)\n• Dinner: pan-fried salmon + broccoli with butter + 30 g almonds (8 g)' },
+    { id: 'keto-s4', ord: 4, name: 'Day 4 — Protein on Keto', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: protein targets, the gluconeogenesis myth.\n\nThe concern that "too much protein kicks you out of ketosis" is overstated. Gluconeogenesis is demand-driven, not supply-driven. Reality:\n\n• Aim for 1.6–2.2 g per kg of bodyweight if training. Do not under-eat protein.\n• Under-eating protein on keto causes muscle loss — a far bigger problem than slightly elevated glucose.\n\nBest fatty protein sources for keto:\n• Ribeye steak — 27 g protein, 18 g fat per 150 g\n• Salmon fillet — 34 g protein, 14 g fat per 150 g\n• Whole eggs — 6 g protein, 5 g fat each\n• Full-fat Greek yogurt (plain) — 10 g protein/100 g (check carbs: ~5 g/100 g, limit to 150 g/day)' },
+    { id: 'keto-s5', ord: 5, name: 'Day 5 — Training on Keto', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: fat-adapted performance, targeted keto for lifting.\n\nDuring the first 3–6 weeks, performance will drop. This is normal — your body is learning to run on fat. Be patient.\n\nAfter fat adaptation:\n• Endurance (Zone 2) improves — fat is a near-unlimited fuel source.\n• High-intensity lifting depends on glycogen, which is limited on keto.\n\nSolutions for hard training days:\n• Targeted Keto (TKD): 15–30 g fast carbs (banana or dextrose) immediately before intense sessions only.\n• Cyclic Keto (CKD): strict keto 5 days, then a 24–48 hr carb refeed on weekends to restore glycogen.\n\nFor most gym-goers, straight keto with adequate sodium and protein is sufficient. Try TKD only if you feel flat on heavy lifting days.' },
+    { id: 'keto-s6', ord: 6, name: 'Day 6 — Reading Labels and Eating Out', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: hidden carbs, restaurant strategy.\n\nHidden carbs derail most keto beginners:\n\n• Sauces: ketchup (4 g/tbsp), balsamic glaze (10 g/tbsp), teriyaki (13 g/tbsp) — excluded. Use olive oil, mayo, mustard, hot sauce.\n• "Low fat" foods always add sugar to compensate — avoid entirely.\n• Processed meats often contain fillers and added sugars — check labels.\n• Alcohol: dry wine (1–2 g/glass) is acceptable. Beer (12 g+) is not. Spirits are 0 g carbs but slow fat burning.\n\nRestaurant strategy:\n• Swap fries/rice/bread for extra salad or vegetables.\n• Ask for sauces on the side — most dressings are sugar-loaded.\n• Steak, grilled fish, salad with olive oil — the universal keto restaurant order.' },
+    { id: 'keto-s7', ord: 7, name: 'Day 7 — Long-Term Keto and Metabolic Flexibility', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: long-term sustainability, blood markers, exit strategy.\n\nAfter 6–8 weeks, review these:\n\nWhat typically improves:\n• Triglycerides (often drop 30–50%)\n• HDL "good" cholesterol typically rises\n• Fasting blood sugar and insulin sensitivity\n• Body composition, particularly visceral fat\n\nWhat to monitor:\n• LDL cholesterol — varies by individual. A blood test at 8 weeks is strongly recommended.\n• Kidney stone risk is slightly elevated. Stay well hydrated (2.5–3 L water/day).\n\nMetabolic flexibility — the goal:\nAfter 3–6 months of keto, many athletes reintroduce carbs strategically (around training) while retaining fat-burning ability. You do not have to do keto forever — the fat adaptation effects persist long after you loosen carb restrictions.' }
+  ];
+
+  const MEDITERRANEAN_SESSIONS = [
+    { id: 'med-s1', ord: 1, name: 'Day 1 — The Mediterranean Pyramid', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: food hierarchy, daily vs. weekly eating patterns.\n\nEat at every meal:\n• Extra-virgin olive oil as primary fat (2–4 tbsp/day)\n• Vegetables (at least 2 portions per meal)\n• Whole grains (sourdough, farro, bulgur, whole-grain pasta)\n• Legumes — at least 1 serving/day\n\nEat daily:\n• Fresh fruit (2–3 portions), nuts and seeds (30 g), unsweetened yogurt\n\nEat 2–3×/week:\n• Oily fish (salmon, sardines, mackerel), eggs, poultry in moderate amounts\n\nEat rarely:\n• Red meat (1–2×/month), processed foods, refined sugar, refined grains\n\nThis pattern has 50+ years of evidence: reduced all-cause mortality, lower cardiovascular risk and better cognitive ageing.' },
+    { id: 'med-s2', ord: 2, name: 'Day 2 — Olive Oil: The Foundation Fat', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: oleic acid, oleocanthal anti-inflammatory effects, polyphenols.\n\nExtra-virgin olive oil (EVOO) is the most studied food in the Mediterranean diet:\n\n• Rich in oleic acid (monounsaturated fat) — reduces LDL oxidation, improves HDL.\n• Contains oleocanthal — a natural anti-inflammatory compound similar to ibuprofen at therapeutic doses.\n• Polyphenol content — high-quality EVOO reduces systemic inflammation and supports longevity.\n\nHow to use it:\n• 2–4 tbsp daily: on salads, drizzled over cooked vegetables, on sourdough instead of butter.\n• Buy cold-pressed, dark-bottled EVOO from the current harvest year.\n• EVOO is stable up to ~190°C — safe for sautéing and roasting.\n• "Olive oil" (not extra-virgin) has been refined and lacks most polyphenols.' },
+    { id: 'med-s3', ord: 3, name: 'Day 3 — Oily Fish Twice a Week', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: omega-3 EPA and DHA, complete protein, micronutrients.\n\nTwo 140 g portions of oily fish per week provides ~2,000–3,000 mg EPA + DHA — the therapeutic dose for cardiovascular, joint and brain health.\n\nBest options (highest omega-3, lowest mercury):\n1. Sardines (canned in olive oil): 2.2 g omega-3/100 g — cheap, sustainable, add to salads.\n2. Mackerel (fresh or smoked): 2.5 g omega-3/100 g — pairs with horseradish or lemon.\n3. Wild salmon: 1.8–2.4 g omega-3/100 g — versatile, widely available.\n4. Anchovies: intense flavour, use in sauces and dressings.\n\nAvoid large fish (tuna, swordfish) more than once a week due to mercury. Small oily fish are the safer, more omega-3-dense choice.' },
+    { id: 'med-s4', ord: 4, name: 'Day 4 — Legumes Every Day', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: dietary fibre, plant protein, gut microbiome, resistant starch.\n\nDaily legume consumption is one of the most consistent markers of longevity across all Blue Zone populations.\n\nWhy they matter:\n• Fibre: 8–15 g per serving — feeds beneficial gut bacteria, slows glucose absorption.\n• Protein: 7–10 g per 100 g cooked.\n• Resistant starch: feeds your microbiome and improves insulin sensitivity.\n\nEasy ways to eat legumes daily:\n• Hummus on wholegrain bread or with vegetables as a snack\n• Lentil or bean soup as a lunch staple (batch cook Sunday)\n• White beans with olive oil, garlic and herbs as a side\n• Add a tin of cannellini beans to stews or pasta sauce\n\nIf legumes cause bloating, start with smaller portions of rinsed canned varieties. The bloating reduces over 2–4 weeks.' },
+    { id: 'med-s5', ord: 5, name: 'Day 5 — Anti-Inflammatory Foods', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: polyphenols, antioxidants, chronic inflammation reduction.\n\nKey anti-inflammatory foods to build meals around:\n\n• Tomatoes (lycopene) — especially cooked with olive oil, which dramatically increases lycopene absorption.\n• Dark leafy greens — spinach, rocket, cavolo nero (vitamin K, folate, antioxidants).\n• Berries — blueberries, strawberries, pomegranate (high polyphenol).\n• Walnuts — 30 g/day reduces inflammatory markers significantly in clinical trials.\n• Turmeric + black pepper — curcumin becomes 20× more bioavailable combined with piperine.\n• Green tea or coffee — both contain polyphenols associated with reduced inflammation.\n• Dark chocolate (85%+) — 20–30 g/day provides flavanols that improve endothelial function.\n\nShop the perimeter of the supermarket. The most anti-inflammatory foods are fresh, whole and minimally processed.' },
+    { id: 'med-s6', ord: 6, name: 'Day 6 — Whole Grains Over Refined', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: glycaemic index, fibre, B vitamins, sustained energy.\n\nThe Mediterranean diet includes carbs — always in their least processed form:\n\n• White pasta → whole-grain pasta or farro. Farro has 3× the fibre and a satisfying texture.\n• White rice → bulgur wheat or freekeh. Both are Mediterranean staples.\n• Processed bread → authentic sourdough on whole-grain flour. Fermentation lowers the glycaemic response.\n• Crackers → rye crispbreads (3 g fibre per cracker, very filling).\n\nThe goal is not to eliminate carbs but to make every gram earn its place with fibre, nutrients and low glycaemic impact.' },
+    { id: 'med-s7', ord: 7, name: 'Day 7 — A Full Week in Practice', sets: 3, reps: null, minutes: null,
+      thumbnail: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=200&q=60',
+      tips: 'Primary: weekly meal planning, the 80/20 principle, sustainability.\n\nA full Mediterranean week:\nMon: Lentil soup + sourdough; grilled salmon + farro + roasted broccoli\nTue: Greek yogurt + walnuts + honey; chickpea salad + feta; chicken with tomato sauce + whole-grain pasta\nWed: Avocado + egg on rye toast; sardine salad with capers; lamb kofta + tabbouleh + hummus\nThu: Overnight oats + berries; bean and vegetable minestrone; sea bass + asparagus + olive oil\nFri: Spinach omelette + sourdough; smoked mackerel + cucumber salad; prawn + cherry tomato pasta\nSat: Mezze spread: hummus, tabbouleh, feta, olives, flatbread; seafood stew\nSun: Shakshuka (eggs in tomato sauce); slow-roasted lamb + roasted vegetables + tzatziki\n\nThe 80/20 rule: studies show that 70–80% adherence delivers the vast majority of longevity benefits. The pattern matters more than any individual meal.' }
+  ];
+
+  for (const p of NEW_DIET_PROGRAMS) {
+    sqlDb.run(
+      `INSERT OR REPLACE INTO programs (id, category, name, difficulty, cover_color, cover_image, hero_image, total_minutes, total_calories, description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [p.id, p.category, p.name, p.difficulty, p.cover_color, p.cover_image, p.hero_image, p.total_minutes, p.total_calories, p.description]
+    );
+  }
+  for (const s of VEGETARIAN_SESSIONS)    stmts.insertProgramSession.run({ id: s.id, program_id: 'diet-vegetarian',   ord: s.ord, name: s.name, sets: s.sets, reps: s.reps, minutes: s.minutes, thumbnail: s.thumbnail, tips: s.tips });
+  for (const s of KETO_SESSIONS)           stmts.insertProgramSession.run({ id: s.id, program_id: 'diet-keto',          ord: s.ord, name: s.name, sets: s.sets, reps: s.reps, minutes: s.minutes, thumbnail: s.thumbnail, tips: s.tips });
+  for (const s of MEDITERRANEAN_SESSIONS)  stmts.insertProgramSession.run({ id: s.id, program_id: 'diet-mediterranean', ord: s.ord, name: s.name, sets: s.sets, reps: s.reps, minutes: s.minutes, thumbnail: s.thumbnail, tips: s.tips });
+  persist();
+}
+patchDietPrograms();
+
 stmts.cleanExpiredTokens.run();
 setInterval(() => stmts.cleanExpiredTokens.run(), 60 * 60 * 1000);
 

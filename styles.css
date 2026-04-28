@@ -5411,6 +5411,98 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   padding: 8px 0 0;
 }
 
+/* ── Home greeting / action cards ── */
+.home-greeting {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.01em;
+  margin-bottom: 2px;
+}
+.home-sub {
+  font-size: 1rem;
+  color: var(--ink-3);
+  margin: 4px 0 28px;
+}
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.home-action-card {
+  position: relative;
+  width: 100%;
+  min-height: 148px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  background: var(--bg-surface-1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.home-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.home-action-card:active { transform: scale(0.98); }
+.home-action-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.22;
+  transition: opacity 0.25s ease;
+}
+.home-action-card:hover .home-action-bg { opacity: 0.32; }
+.home-action-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 100%);
+}
+.home-action-body {
+  position: relative;
+  z-index: 1;
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+.home-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--card-accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-accent) 35%, transparent);
+  color: var(--card-accent);
+  margin-bottom: 4px;
+}
+.home-action-label {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+  line-height: 1.2;
+}
+.home-action-sub {
+  font-size: 0.83rem;
+  color: var(--ink-3);
+  line-height: 1.5;
+  max-width: 320px;
+}
+.home-action-cta {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--card-accent);
+  letter-spacing: 0.01em;
+}
+
 .fit-hero {
   padding: 8px 0 28px;
   display: flex;
@@ -6222,6 +6314,70 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   font-size: 0.95rem;
   margin-bottom: 24px;
 }
+/* ── Muscle Map visual panel (inside runner) ──────────────── */
+.fit-runner-visuals {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.muscle-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 340px;
+}
+.muscle-map-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.muscle-map-views {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: center;
+}
+.muscle-map-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.muscle-map-view-label {
+  font-size: 0.65rem;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.muscle-map-svg {
+  width: 80px;
+  height: auto;
+}
+.muscle-map-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+.muscle-map-badge {
+  background: rgba(45,212,191,0.15);
+  border: 1px solid rgba(45,212,191,0.35);
+  color: #2dd4bf;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
 .fit-runner-timer {
   font-size: 4.4rem;
   font-weight: 800;

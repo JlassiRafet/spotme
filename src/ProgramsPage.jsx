@@ -14,7 +14,6 @@
     { id: 'all',    label: 'All' },
     { id: 'cardio', label: 'Cardio' },
     { id: 'muscle', label: 'Muscle Building' },
-    { id: 'diet',   label: 'Diet' }
   ];
 
   function ProgramCard({ program, onClick }) {
@@ -71,8 +70,9 @@
 
     const filtered = useMemo(() => {
       if (!programs) return null;
-      if (category === 'all') return programs;
-      return programs.filter(p => p.category === category);
+      const nonDiet = programs.filter(p => p.category !== 'diet');
+      if (category === 'all') return nonDiet;
+      return nonDiet.filter(p => p.category === category);
     }, [programs, category]);
 
     return (
@@ -141,4 +141,67 @@
   }
 
   SpotMe.ProgramsPage = ProgramsPage;
+
+  /* ── DietPage ─────────────────────────────────────────────── */
+  function DietPage({ route, onNavigate, onBack }) {
+    const [programs, setPrograms] = useState(null);
+    const [error, setError]       = useState(null);
+
+    useEffect(() => {
+      let cancelled = false;
+      setPrograms(null);
+      setError(null);
+      SpotMe.api.listPrograms('all').then(r => {
+        if (cancelled) return;
+        if (r.ok) setPrograms((r.data.programs || []).filter(p => p.category === 'diet'));
+        else setError(r.error || 'Could not load plans.');
+      });
+      return () => { cancelled = true; };
+    }, []);
+
+    return (
+      <div className="fit-home">
+        <header className="fit-topbar">
+          <button type="button" className="fit-icon-btn" onClick={onBack} aria-label="Back">
+            <span style={{ width: 18, height: 18, display: 'inline-flex' }}><ArrowLeftIcon /></span>
+          </button>
+          <h1 className="fit-topbar-title">Nutrition Plans</h1>
+          <div style={{ width: 40 }} />
+        </header>
+
+        <div className="fit-page">
+          <h2 className="fit-section-title">Diet programs</h2>
+
+          {programs === null && (
+            <div className="fit-loading"><span className="fit-spinner" />Loading…</div>
+          )}
+          {error && (
+            <div className="fit-empty">
+              <div className="fit-empty-title">Couldn't load plans</div>
+              <div>{error}</div>
+            </div>
+          )}
+          <div className="fit-programs-grid">
+            {programs && programs.map(p => (
+              <ProgramCard
+                key={p.id}
+                program={p}
+                onClick={() => onNavigate('program', {
+                  programId: p.id,
+                  from: { name: 'diet' }
+                })}
+              />
+            ))}
+          </div>
+          {programs && programs.length === 0 && (
+            <div className="fit-empty">
+              <div className="fit-empty-title">No diet plans yet</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  SpotMe.DietPage = DietPage;
 })();

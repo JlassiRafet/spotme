@@ -26,7 +26,7 @@
   const {
     SpotMeLogo, BellIcon, MenuIcon, CloseIcon,
     HomeIcon, CalendarIcon, DumbbellIcon, CrownIcon,
-    HistoryIcon, UserIcon, LogoutIcon
+    HistoryIcon, UserIcon, LogoutIcon, LeafIcon
   } = SpotMe.icons;
 
   /* ---------- path <-> route ---------- */
@@ -40,6 +40,7 @@
       case 'activities':  return day ? `/activities/${encodeURIComponent(day)}` : '/activities';
       case 'programs':    return (category && category !== 'all') ? `/programs/${encodeURIComponent(category)}` : '/programs';
       case 'program':     return programId ? `/program/${encodeURIComponent(programId)}` : '/programs';
+      case 'diet':        return '/diet';
       case 'membership':  return '/membership';
       case 'profile':     return '/profile';
       case 'history':     return '/history';
@@ -58,6 +59,7 @@
       case 'activities': return seg1 ? { name: 'activities', day: decodeURIComponent(seg1) } : { name: 'activities' };
       case 'programs':   return seg1 ? { name: 'programs', category: decodeURIComponent(seg1) } : { name: 'programs' };
       case 'program':    return seg1 ? { name: 'program', programId: decodeURIComponent(seg1) } : { name: 'programs' };
+      case 'diet':       return { name: 'diet' };
       case 'membership': return { name: 'membership' };
       case 'profile':    return { name: 'profile' };
       case 'history':    return { name: 'history' };
@@ -146,6 +148,7 @@
       { name: 'home',       label: 'Home',        Icon: HomeIcon },
       { name: 'activities', label: 'Activities',  Icon: CalendarIcon },
       { name: 'programs',   label: 'Programs',    Icon: DumbbellIcon },
+      { name: 'diet',       label: 'Nutrition',   Icon: LeafIcon },
       { name: 'membership', label: 'Membership',  Icon: CrownIcon },
       { name: 'history',    label: 'History',     Icon: HistoryIcon },
       { name: 'profile',    label: 'Account',     Icon: UserIcon }
@@ -197,6 +200,7 @@
       { name: 'home',       label: 'Home',       Icon: HomeIcon },
       { name: 'activities', label: 'Activities', Icon: CalendarIcon },
       { name: 'programs',   label: 'Programs',   Icon: DumbbellIcon },
+      { name: 'diet',       label: 'Nutrition',  Icon: LeafIcon },
       { name: 'membership', label: 'Membership', Icon: CrownIcon }
     ];
     return (
@@ -301,7 +305,7 @@
     }, [dicterOpen]);
 
     /* derive top bar visibility ------------------------------- */
-    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'membership'];
+    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership'];
     const showTopbar = !HIDE_TOPBAR.includes(route.name);
     const isFullScreenMode = route.name === 'runner' || route.name === 'dietRunner';
 
@@ -355,6 +359,7 @@
               onNavigate={navigate}
               onOpenProfile={() => setProfileMenuOpen(o => !o)}
               onOpenBell={() => setBellPulse(false)}
+              onOpenChat={() => setDicterOpen(true)}
             />
           )}
 
@@ -369,6 +374,15 @@
 
           {route.name === 'programs' && SpotMe.ProgramsPage && (
             <SpotMe.ProgramsPage
+              profile={profile}
+              route={route}
+              onNavigate={navigate}
+              onBack={back}
+            />
+          )}
+
+          {route.name === 'diet' && SpotMe.DietPage && (
+            <SpotMe.DietPage
               profile={profile}
               route={route}
               onNavigate={navigate}

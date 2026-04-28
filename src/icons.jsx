@@ -129,6 +129,7 @@
   function CheckBigIcon(){ return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>); }
   function CloseIcon()  { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>); }
   function MenuIcon()   { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>); }
+  function LeafIcon()   { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22c4-4 6-8 6-14 0 0 8 2 10 10-6 0-10 2-16 4z"/><path d="M8 8c0 0 4 4 4 9"/></svg>); }
 
   Object.assign(SpotMe.icons, {
     EyeIcon, GoogleIcon, ChevronIcon, CheckIcon, SpotMeLogo,
@@ -137,6 +138,6 @@
     ArrowLeftIcon, ArrowRightIcon, UserIcon, TrashIcon, SparkleIcon, LogoutIcon,
     CalendarIcon, DumbbellIcon, FlameIcon, HeartIcon, WaterDropIcon,
     FootprintsIcon, ClockIcon, PlayIcon, PauseIcon, CheckBigIcon,
-    CloseIcon, MenuIcon
+    CloseIcon, MenuIcon, LeafIcon
   });
 })();

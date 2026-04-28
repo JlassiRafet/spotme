@@ -7,13 +7,13 @@
 
 (function () {
   const SpotMe = (window.SpotMe = window.SpotMe || {});
-  const { HomeIcon, CalendarIcon, DumbbellIcon, CrownIcon } = SpotMe.icons;
+  const { HomeIcon, CalendarIcon, DumbbellIcon, LeafIcon } = SpotMe.icons;
 
   const TABS = [
     { name: 'home',       label: 'Home',       Icon: HomeIcon },
     { name: 'activities', label: 'Activities', Icon: CalendarIcon },
     { name: 'programs',   label: 'Programs',   Icon: DumbbellIcon },
-    { name: 'membership', label: 'Membership', Icon: CrownIcon }
+    { name: 'diet',       label: 'Nutrition',  Icon: LeafIcon },
   ];
 
   function TabBar({ activeName, onNavigate }) {

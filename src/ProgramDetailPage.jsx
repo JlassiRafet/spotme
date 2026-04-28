@@ -308,6 +308,13 @@
               {current.reps ? `${current.reps} reps` : ''}
               {!current.sets && !current.reps && current.minutes ? `${current.minutes} min` : ''}
             </div>
+
+            {current.tips && SpotMe.MuscleMap && (
+              <div className="fit-runner-visuals">
+                <SpotMe.MuscleMap tips={current.tips} />
+              </div>
+            )}
+
             <div className="fit-runner-timer t-mono-num">{fmt(seconds)}</div>
 
             <div className="fit-runner-actions">
