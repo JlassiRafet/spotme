@@ -1,14 +1,28 @@
 /* ============================================================
-   SpotMe — Root App
+   SpotMe — Root App  (path-based routing edition)
    Top-level router. Four states:
      'booting'    : checking for a saved session on page load
-     'marketing'  : public home page
-     'auth'       : AuthCard (login / signup flow)
-     'app'        : logged-in AppShell
+     'marketing'  : public home page  (/)
+     'auth'       : AuthCard (login / signup)  (/login  /register)
+     'app'        : logged-in AppShell  (/dashboard  /programs  …)
 
    On mount we read the saved token from localStorage (via SpotMe.api)
-   and call /api/auth/me to verify it. If it's valid, we skip straight
-   to the app shell. If it's expired or missing, we land on marketing.
+   and call /api/auth/me to verify it.
+
+   Path → top-level state mapping:
+     /              → marketing
+     /login         → auth  (login view)
+     /register      → auth  (signup-1 view)
+     /signup        → auth  (signup-1 view)
+     /dashboard     → app   (HomeFeed)
+     /activities/*  → app   (ActivitiesPage)
+     /programs/*    → app   (ProgramsPage)
+     /program/:id   → app   (ProgramDetailPage)
+     /membership    → app   (MembershipPage)
+     /profile       → app   (ProfilePage)
+     /history       → app   (HistoryPage)
+     unknown        → same as / (marketing) when logged out,
+                      same as /dashboard when logged in
    ============================================================ */
 
 (function () {
@@ -24,59 +38,139 @@
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   })();
 
+  /* ---------- helpers ---------- */
+
+  /** Classify the current pathname into a top-level intent. */
+  function classifyPath(pathname) {
+    const p = pathname.replace(/\/$/, '') || '/';
+    if (p === '/') return 'marketing';
+    if (p === '/login') return 'login';
+    if (p === '/register' || p === '/signup') return 'register';
+    // Any app-shell path:
+    const APP_PREFIXES = [
+      '/dashboard', '/activities', '/programs', '/program', '/diet',
+      '/membership', '/profile', '/history'
+    ];
+    if (APP_PREFIXES.some(prefix => p === prefix || p.startsWith(prefix + '/'))) return 'app';
+    // Unknown path → treated as marketing root
+    return 'marketing';
+  }
+
+  /** Navigate the browser to a new path without reloading. */
+  function push(path) {
+    history.pushState({}, '', path);
+  }
+  function replace(path) {
+    history.replaceState({}, '', path);
+  }
+
+  /* ---------- App ---------- */
+
   function App() {
     const [route, setRoute] = useState('booting');
     const [authEntry, setAuthEntry] = useState('login');
     const [profile, setProfile] = useState(null);
 
-    /* ---- bootstrap: check for a saved token ---- */
+    /* ---- bootstrap: check token + classify current path ---- */
     useEffect(() => {
       let cancelled = false;
+      const intent = classifyPath(window.location.pathname);
 
       (async () => {
         const savedToken = SpotMe.api.getToken();
+
+        // Not logged in
         if (!savedToken) {
-          if (!cancelled) setRoute('marketing');
+          if (cancelled) return;
+          if (intent === 'login') {
+            setAuthEntry('login');
+            setRoute('auth');
+          } else if (intent === 'register') {
+            setAuthEntry('signup-1');
+            setRoute('auth');
+          } else if (intent === 'app') {
+            // Protected path accessed while logged out → redirect to /login
+            replace('/login');
+            setAuthEntry('login');
+            setRoute('auth');
+          } else {
+            replace('/');
+            setRoute('marketing');
+          }
           return;
         }
-        // Optimistically show the saved user immediately so the UI
-        // doesn't flash marketing before /me returns.
+
+        // Token exists: optimistically show the right view
         const savedUser = SpotMe.api.getSavedUser();
         if (savedUser && !cancelled) {
           setProfile(savedUser);
-          setRoute('app');
+          if (intent === 'login' || intent === 'register' || intent === 'marketing') {
+            // Already logged in — redirect to app
+            replace('/dashboard');
+            setRoute('app');
+          } else {
+            setRoute('app');
+          }
         }
-        // Verify the token in the background.
+
+        // Verify in background
         const r = await SpotMe.api.me();
         if (cancelled) return;
         if (r.ok) {
           setProfile(r.data.user);
+          if (intent === 'login' || intent === 'register' || intent === 'marketing') {
+            replace('/dashboard');
+          }
           setRoute('app');
         } else {
-          // Token was invalid/expired. api.js already cleared it.
           setProfile(null);
-          setRoute('marketing');
+          if (intent === 'login') {
+            setAuthEntry('login');
+            setRoute('auth');
+          } else if (intent === 'register') {
+            setAuthEntry('signup-1');
+            setRoute('auth');
+          } else {
+            replace('/');
+            setRoute('marketing');
+          }
         }
       })();
 
       return () => { cancelled = true; };
     }, []);
 
+    /* ---- listen for browser back/forward ---- */
+    useEffect(() => {
+      const onPop = () => {
+        const intent = classifyPath(window.location.pathname);
+        if (intent === 'login') { setAuthEntry('login'); setRoute('auth'); }
+        else if (intent === 'register') { setAuthEntry('signup-1'); setRoute('auth'); }
+        else if (intent === 'marketing') setRoute('marketing');
+        else if (intent === 'app') setRoute('app');
+      };
+      window.addEventListener('popstate', onPop);
+      return () => window.removeEventListener('popstate', onPop);
+    }, []);
+
     /* ---- navigation helpers ---- */
 
     const goAuth = useCallback((entry) => {
       setAuthEntry(entry);
+      push(entry === 'signup-1' ? '/register' : '/login');
       setRoute('auth');
     }, []);
 
     const handleAuthComplete = useCallback((user) => {
       setProfile(user);
+      push('/dashboard');
       setRoute('app');
     }, []);
 
     const handleLogout = useCallback(async () => {
       await SpotMe.api.logout();
       setProfile(null);
+      push('/');
       setRoute('marketing');
     }, []);
 
@@ -107,7 +201,7 @@
           <SpotMe.AuthCard
             initialView={authEntry}
             onAuthComplete={handleAuthComplete}
-            onBackToMarketing={() => setRoute('marketing')}
+            onBackToMarketing={() => { push('/'); setRoute('marketing'); }}
           />
         </main>
       );

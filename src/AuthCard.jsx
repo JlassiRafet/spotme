@@ -398,6 +398,9 @@
     const handleSwitch = useCallback((nextView) => {
       if (phase === 'exiting' || nextView === view) return;
       if (view === 'signup-2' && nextView !== 'signup-2') setSubmitError('');
+      // Keep the URL in sync with the auth sub-view
+      const targetPath = nextView === 'login' ? '/login' : '/register';
+      if (window.location.pathname !== targetPath) history.pushState({}, '', targetPath);
       setTarget(nextView);
       setPhase('exiting');
     }, [phase, view]);

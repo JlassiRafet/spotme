@@ -50,29 +50,130 @@
 
   /* ── Data ──────────────────────────────────────────────── */
   const STATS = [
-    { value: '< 1s',  label: 'AI response time' },
-    { value: '70B',   label: 'Parameter model' },
-    { value: '∞',     label: 'Session memory' },
-    { value: '100%',  label: 'Private by default' },
+    { label: 'Active members',      kind: 'count',  prefix: '', from: 0, to: 12400, suffix: '+' },
+    { label: 'Workouts logged',     kind: 'count',  prefix: '', from: 0, to: 87,    suffix: 'K+' },
+    { label: 'Programs available',  kind: 'count',  prefix: '', from: 0, to: 18,    suffix: '' },
+    { label: 'Avg. session rating', kind: 'symbol', value: '4.9★' },
   ];
+
+  function formatCountStat(s, n) {
+    const num = typeof n === 'number' ? Math.round(n) : n;
+    return `${s.prefix ?? ''}${num}${s.suffix ?? ''}`;
+  }
+
+  /* ── Stats bar — Motion count-up when in view (stagger order) ─ */
+  function AnimatedStat({ stat, index, active }) {
+    const symRef = useRef(null);
+    const [display, setDisplay] = useState(() =>
+      stat.kind === 'symbol' ? stat.value : formatCountStat(stat, stat.from));
+
+    useEffect(() => {
+      if (!active) return undefined;
+
+      let cancelled = false;
+      let ctrl;
+      const M = typeof window !== 'undefined' ? window.Motion : null;
+      const staggerMs = index * 110;
+
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        if (!M?.animate) {
+          if (stat.kind === 'symbol') {
+            const el = symRef.current;
+            if (el) {
+              el.style.opacity = '1';
+              el.style.transform = '';
+            }
+          } else setDisplay(formatCountStat(stat, stat.to));
+          return;
+        }
+
+        if (stat.kind === 'symbol') {
+          const el = symRef.current;
+          if (!el) return;
+          ctrl = M.animate(
+            el,
+            { opacity: 1, scale: 1 },
+            { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
+          );
+          return;
+        }
+
+        ctrl = M.animate(stat.from, stat.to, {
+          duration: 1.05,
+          ease: [0.22, 1, 0.36, 1],
+          onUpdate: (latest) => setDisplay(formatCountStat(stat, latest)),
+          onComplete: () => setDisplay(formatCountStat(stat, stat.to)),
+        });
+      }, staggerMs);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+        ctrl?.stop?.();
+      };
+    }, [active, stat, index]);
+
+    if (stat.kind === 'symbol') {
+      return (
+        <div className="marketing-stat">
+          <div
+            ref={symRef}
+            className="marketing-stat-value marketing-stat-value--infinity"
+          >
+            {stat.value}
+          </div>
+          <div className="marketing-stat-label">{stat.label}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="marketing-stat">
+        <div className="marketing-stat-value">{display}</div>
+        <div className="marketing-stat-label">{stat.label}</div>
+      </div>
+    );
+  }
+
+  function AnimatedStatsSection() {
+    const [ref, inView] = useInView(0.12);
+    return (
+      <div
+        ref={ref}
+        style={{
+          opacity: inView ? 1 : 0,
+          transform: inView ? 'none' : 'translateY(28px)',
+          transition:
+            'opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
+      >
+        <div className="marketing-stats-bar">
+          {STATS.map((s, i) => (
+            <AnimatedStat key={i} stat={s} index={i} active={inView} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const FEATURES = [
     {
-      title: 'Adaptive sessions',
-      body: 'Workouts that reshape themselves around how you actually felt yesterday — no manual adjustment needed.',
+      title: 'Exercise library',
+      body: '200+ exercises with step-by-step form cues, real muscle diagrams and sports-science tips — built for every level.',
       img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=60',
-      tag: 'Smart planning',
+      tag: 'Programs',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          <path d="M6.5 6.5h11M6.5 12h11M6.5 17.5h11"/><rect x="2" y="3" width="20" height="18" rx="2"/>
         </svg>
       ),
     },
     {
-      title: 'Know your numbers',
-      body: "Progress tracking that's honest — not just a graph that only ever goes up.",
+      title: 'Smart tracking',
+      body: 'Log sets, reps and weight. Watch your strength curve grow over time with clear charts that show exactly where you are progressing.',
       img: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=60',
-      tag: 'Progress tracking',
+      tag: 'Progress',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
           <line x1="18" y1="20" x2="18" y2="10"/>
@@ -82,26 +183,24 @@
       ),
     },
     {
-      title: 'One coach, always',
-      body: 'Your AI coach remembers your goals, injuries and history. No restart-from-zero between sessions.',
-      img: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=60',
-      tag: 'Persistent memory',
+      title: 'Nutrition plans',
+      body: 'Macro targets, meal-by-meal tips and full diet programs — Keto, Vegetarian, Mediterranean and more — tuned to your training goal.',
+      img: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=60',
+      tag: 'Nutrition',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
+          <path d="M12 2a10 10 0 0 1 0 20A10 10 0 0 1 12 2z"/><path d="M12 8v4l3 3"/>
         </svg>
       ),
     },
     {
-      title: 'Identify equipment',
-      body: 'Point your camera at any gym machine. Instant breakdown — muscles worked, form cues, safety tips.',
-      img: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=60',
-      tag: 'AI vision',
+      title: 'AI coach on-demand',
+      body: 'Ask anything — form checks, programme adjustments, recovery advice. Your coach is always on and never forgets your history.',
+      img: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=60',
+      tag: 'AI Coach',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
       ),
     },
@@ -109,29 +208,29 @@
 
   const BENEFITS = [
     {
-      title: 'Smarter decision-making',
-      body: 'Leverage real-time performance data and AI analysis to make better calls — when to push harder, when to recover, when to switch focus.',
+      title: 'Strength that compounds',
+      body: 'Progressive overload is built into every program. You will always know exactly when and how much to push — no guesswork, no plateaus.',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
         </svg>
       ),
     },
     {
-      title: 'Consistent progress',
-      body: 'Every session builds on the last. Your coach tracks what worked and what hurt — no wasted reps, no forgotten PRs.',
+      title: 'Dialled-in nutrition',
+      body: 'Four complete diet programs — Macro, Vegetarian, Keto and Mediterranean — with daily tips, food examples and macro targets for your goal.',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          <path d="M3 11l19-9-9 19-2-8-8-2z"/>
         </svg>
       ),
     },
     {
-      title: 'Fully personalised',
-      body: 'Not a generic plan. SpotMe knows your schedule, equipment, limitations, and preferred training style — and adapts continuously.',
+      title: 'Consistency, not motivation',
+      body: 'Structured programs with step-by-step runners, rest timers and muscle maps take the decision-making out of every session — especially the hard days.',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/>
         </svg>
       ),
     },
@@ -275,7 +374,7 @@
       <div className="marketing-shell" style={{ marginTop: 0, paddingTop: 0 }}>
 
         {/* ── Pill nav ────────────────────────────────────────── */}
-        <nav className="marketing-nav-pill" style={{ marginTop: 0, top: 0 }}>
+        <nav className="marketing-nav-pill">
           <div className="nav-pill-brand">
             <SpotMeLogo size={28} />
             <span>SpotMe</span>
@@ -292,6 +391,8 @@
           </div>
         </nav>
 
+        <div className="marketing-shell-body">
+
         {/* ── Hero ────────────────────────────────────────────── */}
         <main className="marketing-hero" style={{ paddingTop: 0, marginTop: 0 }}>
           <div className="hero-bg-blur" aria-hidden="true" />
@@ -300,7 +401,7 @@
 
           <div className="marketing-badge hero-reveal-1">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            <span>Powered by Llama 3.3 70B</span>
+            <span>18 programs · All fitness levels</span>
           </div>
 
           <h1 className="marketing-title hero-reveal-2">
@@ -325,23 +426,14 @@
         </main>
 
         {/* ── Stats bar ───────────────────────────────────────── */}
-        <Reveal>
-          <div className="marketing-stats-bar">
-            {STATS.map((s, i) => (
-              <div key={i} className="marketing-stat">
-                <div className="marketing-stat-value">{s.value}</div>
-                <div className="marketing-stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+        <AnimatedStatsSection />
 
         {/* ── Features ────────────────────────────────────────── */}
         <section id="features" className="marketing-features-section" style={{ paddingTop: 80 }}>
           <Reveal>
-            <SectionLabel>AI Capabilities</SectionLabel>
+            <SectionLabel>What's Inside</SectionLabel>
             <h2 className="marketing-section-title">
-              Everything a real coach<br/>would remember.
+              Everything you need<br/>in one place.
             </h2>
           </Reveal>
           <div className="feature-cards-grid">
@@ -355,7 +447,7 @@
         <section id="benefits" className="marketing-benefits-section">
           <Reveal>
             <SectionLabel>Benefits</SectionLabel>
-            <h2 className="marketing-section-title">What you actually get.</h2>
+            <h2 className="marketing-section-title">Real results, not guesswork.</h2>
           </Reveal>
           <div className="benefits-grid">
             {BENEFITS.map((b, i) => (
@@ -374,13 +466,13 @@
         <section className="marketing-how-section">
           <Reveal>
             <SectionLabel>How it works</SectionLabel>
-            <h2 className="marketing-section-title">Three steps. One coach.</h2>
+            <h2 className="marketing-section-title">Three steps. Better body.</h2>
           </Reveal>
           <div className="how-steps-row">
             {[
-              { num: '01', title: 'Tell it about yourself', body: 'Your goals, injuries, experience level — once, not every session.' },
-              { num: '02', title: 'Chat before every session', body: 'Get a personalised plan in seconds. Adjust on the fly.' },
-              { num: '03', title: 'Review and grow', body: 'Log how it went. The AI factors that into your next workout.' },
+              { num: '01', title: 'Pick your goal', body: 'Muscle, cardio or diet — browse 18 programs and choose the one that fits where you want to be.' },
+              { num: '02', title: 'Follow the program', body: 'Step-by-step exercise runner with form cues, muscle diagrams and a built-in rest timer. No thinking required.' },
+              { num: '03', title: 'Track and improve', body: 'Review your session history, monitor streaks and body metrics — and let your AI coach refine the plan.' },
             ].map((s, i) => (
               <Reveal key={i} delay={i * 100}>
                 <div className="how-step-card liquid">
@@ -453,6 +545,8 @@
           </div>
           <div className="marketing-footer-wordmark" aria-hidden="true">SPOTME</div>
         </footer>
+
+        </div>
 
       </div>
     );

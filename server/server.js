@@ -23,6 +23,8 @@ import { profileRoutes }      from './routes/profile.js';
 import { transcribeRoutes }   from './routes/transcribe.js';
 import { trackerRoutes }      from './routes/tracker.js';
 import { subscriptionRoutes, webhookRoutes } from './routes/subscription.js';
+import { programsRoutes }   from './routes/programs.js';
+import { metricsRoutes }    from './routes/metrics.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -92,15 +94,32 @@ app.use('/api/transcribe',   transcribeRoutes);
 app.use('/api/tracker',      trackerRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/webhook',      webhookRoutes);
+app.use('/api/programs',   programsRoutes);
+app.use('/api/metrics',    metricsRoutes);
 
 /* Serve the frontend files from the parent folder. */
 const frontendDir = path.resolve(__dirname, '..');
 app.use(express.static(frontendDir, {
-  extensions: ['html'],
+  // Don't auto-serve .html extension — we handle that in the SPA catch-all below.
+  extensions: [],
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.jsx')) res.setHeader('Cache-Control', 'no-store');
   }
 }));
+
+/*
+ * SPA catch-all — serve index.html for every GET request that:
+ *   - does not start with /api/
+ *   - does not look like a static asset (has no dot-extension in the last segment)
+ * This lets the client-side path-router handle /login, /dashboard, /programs/:id, etc.
+ */
+const indexHtml = path.join(frontendDir, 'index.html');
+app.get('*', (req, res, next) => {
+  // Skip if it looks like a static file request (e.g. /styles.css, /src/api.js)
+  const last = req.path.split('/').at(-1);
+  if (last && last.includes('.')) return next();
+  res.sendFile(indexHtml, err => { if (err) next(err); });
+});
 
 /* ---------- error handler ---------- */
 app.use((err, _req, res, _next) => {

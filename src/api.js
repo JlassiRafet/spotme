@@ -291,6 +291,40 @@
     return request(`/api/tracker/${id}`, { method: 'DELETE' });
   }
 
+  /* ---------- programs catalogue ---------- */
+
+  function listPrograms(category) {
+    const q = category && category !== 'all' ? `?category=${encodeURIComponent(category)}` : '';
+    return request(`/api/programs${q}`);
+  }
+  function getProgram(id) {
+    return request(`/api/programs/${encodeURIComponent(id)}`);
+  }
+  function startProgram(id, sessionId) {
+    return request(`/api/programs/${encodeURIComponent(id)}/start`, {
+      method: 'POST',
+      body: { sessionId: sessionId || null }
+    });
+  }
+  function finishProgram(id, summary) {
+    return request(`/api/programs/${encodeURIComponent(id)}/finish`, {
+      method: 'POST',
+      body: summary
+    });
+  }
+  function listRecentRuns(limit = 10) {
+    return request(`/api/programs/runs/recent?limit=${limit}`);
+  }
+
+  /* ---------- daily metrics ---------- */
+
+  function getMetrics(days = 7) {
+    return request(`/api/metrics?days=${days}`);
+  }
+  function upsertTodayMetric(patch) {
+    return request('/api/metrics', { method: 'POST', body: patch });
+  }
+
   /* ---------- health (used by a small status badge, optional) ---------- */
 
   function health() {
@@ -335,6 +369,10 @@
     updateProfile, requestUpgrade,
     // tracker
     logWorkout, getTracker, getTrackerStats, deleteWorkoutLog,
+    // programs
+    listPrograms, getProgram, startProgram, finishProgram, listRecentRuns,
+    // metrics
+    getMetrics, upsertTodayMetric,
     // misc
     health,
     // generic (used by PlansPage and others)
