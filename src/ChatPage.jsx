@@ -319,11 +319,21 @@
     );
   }
 
+  function TypingIndicator() {
+    return (
+      <div className="typing-indicator">
+        <div className="typing-dot" />
+        <div className="typing-dot" />
+        <div className="typing-dot" />
+      </div>
+    );
+  }
+
   /* ------------------------------------------------------------
      Message — a single user or assistant bubble.
      Handles text chat, image thumbnails, and IdentifyCard results.
      ------------------------------------------------------------ */
-  function Message({ role, content, streaming, imageDataUrl, identification, t }) {
+  function Message({ role, content, streaming, thinking, imageDataUrl, identification, t }) {
     const { useMemo } = React;
 
     const html = useMemo(() => {
@@ -346,20 +356,26 @@
 
     // Identify result — show rich card
     if (identification) {
-      return SpotMe.IdentifyCard
-        ? <SpotMe.IdentifyCard ident={identification} />
-        : null;
-    }
-
-    // Identify loading state
-    if (streaming && !content) {
       return (
         <div className="msg msg-assistant">
           <div className="msg-avatar"><SpotMeLogo size={26} /></div>
           <div className="msg-body">
             <div className="msg-role">{t ? t('chat.coachName') : 'SpotMe Coach'}</div>
-            <div className="msg-content">
-              {t ? t('chat.analyzing') : 'Analyzing equipment'}<span className="msg-cursor" />
+            {SpotMe.IdentifyCard ? <SpotMe.IdentifyCard ident={identification} /> : null}
+          </div>
+        </div>
+      );
+    }
+
+    // Assistant loading/thinking state
+    if (streaming && (thinking || !content)) {
+      return (
+        <div className="msg msg-assistant">
+          <div className="msg-avatar"><SpotMeLogo size={26} /></div>
+          <div className="msg-body">
+            <div className="msg-role">{t ? t('chat.coachName') : 'SpotMe Coach'}</div>
+            <div className="msg-bubble-assistant">
+              <TypingIndicator />
             </div>
           </div>
         </div>
@@ -371,15 +387,16 @@
         <div className="msg-avatar"><SpotMeLogo size={26} /></div>
         <div className="msg-body">
           <div className="msg-role">{t ? t('chat.coachName') : 'SpotMe Coach'}</div>
-          {html ? (
-            <div className="msg-content md-content"
-                 dangerouslySetInnerHTML={{ __html: html }} />
-          ) : (
-            <div className="msg-content">
-              {content}
-              {streaming && <span className="msg-cursor" />}
-            </div>
-          )}
+          <div className="msg-bubble-assistant">
+            {html ? (
+              <div className="msg-content md-content"
+                   dangerouslySetInnerHTML={{ __html: html }} />
+            ) : (
+              <div className="msg-content">
+                {content}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -436,7 +453,12 @@
     // Scroll to bottom on new message
     useEffect(() => {
       const el = threadRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
+      if (el) {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }, [messages, sending, loadingSession]);
 
     const send = useCallback((text) => {
@@ -491,7 +513,9 @@
       setMessages(m => [...m, { role: 'user', content: text }]);
 
       // Append a placeholder assistant message we'll stream into.
-      setMessages(m => [...m, { role: 'assistant', content: '', streaming: true }]);
+      setMessages(m => [...m, { role: 'assistant', content: '', streaming: true, thinking: true }]);
+
+      const startTime = Date.now();
 
       const ctrl = SpotMe.api.streamChat({
         sessionId: sessionId || undefined,
@@ -507,7 +531,12 @@
             const copy = [...m];
             const last = copy[copy.length - 1];
             if (last && last.streaming) {
-              copy[copy.length - 1] = { ...last, content: last.content + delta };
+              const elapsed = Date.now() - startTime;
+              copy[copy.length - 1] = { 
+                ...last, 
+                content: last.content + delta,
+                thinking: elapsed < 400
+              };
             }
             return copy;
           });
@@ -517,7 +546,7 @@
             const copy = [...m];
             const last = copy[copy.length - 1];
             if (last && last.streaming) {
-              copy[copy.length - 1] = { ...last, streaming: false };
+              copy[copy.length - 1] = { ...last, streaming: false, thinking: false };
             }
             return copy;
           });
@@ -580,6 +609,7 @@
               {messages.map((m, i) => (
                 <Message key={i} role={m.role} content={m.content}
                          streaming={!!m.streaming}
+                         thinking={!!m.thinking}
                          imageDataUrl={m.imageDataUrl}
                          identification={m.identification}
                          t={t} />
