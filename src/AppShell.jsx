@@ -358,13 +358,8 @@
             />
           )}
 
-          {route.name === 'activities' && SpotMe.ActivitiesPage && (
-            <SpotMe.ActivitiesPage
-              profile={profile}
-              route={route}
-              onNavigate={navigate}
-              onBack={back}
-            />
+          {route.name === 'activities' && SpotMe.TrackerPage && (
+            <SpotMe.TrackerPage profile={profile} />
           )}
 
           {route.name === 'programs' && SpotMe.ProgramsPage && (

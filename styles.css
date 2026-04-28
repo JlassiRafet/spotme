@@ -4155,12 +4155,21 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
    ========================================================= */
 
 :root {
-  --muscle-color-0: #ff8844;
-  --muscle-color-1: #4fa8ff;
-  --muscle-color-2: #88ff44;
-  --muscle-color-3: #ff4488;
-  --muscle-color-4: #44ff88;
-  --card-bg-opaque: #0d1222;
+  --muscle-color-0: #4ECDC4;
+  --muscle-color-1: #E57399;
+  --muscle-color-2: #A855F7;
+  --muscle-color-3: #A8E63D;
+  --muscle-color-4: #F472B6;
+  --card-bg-opaque: #0d0d14;
+  --tracker-teal: #4ECDC4;
+  --tracker-accent: #E57399;
+  --tracker-accent-violet: #8b5cf6;
+  --tracker-orange: #E57399;
+  --tracker-lime: #A8E63D;
+  --tracker-purple: #A855F7;
+  --tracker-pink: #F472B6;
+  --tracker-card-bg: rgba(18, 20, 35, 0.92);
+  --tracker-card-border: rgba(255, 255, 255, 0.07);
 }
 
 .tracker-dashboard-grid {
@@ -4352,11 +4361,58 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
-.pr-info { display: flex; flex-direction: column; gap: 2px; }
+.pr-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.pr-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
 .pr-name { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.9); }
 .pr-date { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
 .pr-stats { text-align: right; }
+/* PR block: allow dropdowns/actions to paint above siblings; ::before stays pointer-events:none */
+.tracker-page--v2 .prs-card {
+  overflow: visible;
+  isolation: isolate;
+  padding: 22px;
+}
+.tracker-page--v2 .prs-card.chart-card::before {
+  z-index: 0;
+}
+.tracker-page--v2 .prs-card .chart-title,
+.tracker-page--v2 .prs-card .prs-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.pr-delete-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.pr-delete-btn:hover:not(:disabled) {
+  color: #f472b6;
+  border-color: rgba(244, 114, 182, 0.35);
+  background: rgba(244, 114, 182, 0.08);
+}
+.pr-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 .pr-weight { font-size: 1rem; font-weight: 800; color: #ff8844; }
 .pr-delta { font-size: 0.7rem; color: #66cc66; font-weight: 700; }
 
@@ -6688,4 +6744,715 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 
 /* Marketing page keeps its own teal but tighten contrast */
 .marketing-shell .btn-primary { color: #052e2a !important; }
+
+/* =========================================================
+   Tracker v2 — Image 1 layout × Image 2 palette
+   Greeting · ring streak · pulse activity · dual line · multi-rings
+   ========================================================= */
+
+.tracker-page--v2 { background: transparent; }
+.tracker-page--v2 .tracker-content {
+  max-width: 880px;
+  gap: 18px;
+}
+
+/* Logged-in shell: Activities tab mounts TrackerPage */
+.fit-shell .tracker-page.tracker-page--v2 {
+  width: 100%;
+  min-height: calc(100vh - var(--tabbar-h, 64px) - 24px);
+  box-sizing: border-box;
+}
+
+/* ── Greeting header ────────────────────────────────────── */
+.tracker-greeting {
+  padding: 4px 4px 8px;
+}
+.tracker-greeting-eyebrow {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+.tracker-greeting-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+  line-height: 1.1;
+}
+
+/* ── Row layout (replaces dashboard grid for v2) ────────── */
+.tracker-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.tracker-row--two { grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .tracker-row--two { grid-template-columns: 1fr 1fr; gap: 18px; }
+}
+
+/* ── Shared card surface ────────────────────────────────── */
+.tracker-page--v2 .chart-card {
+  padding: 22px;
+  border-radius: 28px;
+  background: var(--tracker-card-bg);
+  border: 1px solid var(--tracker-card-border);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  position: relative;
+  overflow: hidden;
+}
+.tracker-page--v2 .chart-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 0% 0%, rgba(229, 115, 153, 0.07), transparent 55%);
+  pointer-events: none;
+}
+
+.tracker-page--v2 .chart-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 14px;
+}
+.tracker-page--v2 .chart-header { margin-bottom: 14px; }
+
+/* ── Ring card (StreakCard) ─────────────────────────────── */
+.tracker-ring-card {
+  padding: 20px;
+  border-radius: 28px;
+  background: var(--tracker-card-bg);
+  border: 1px solid var(--tracker-card-border);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.tracker-ring-card.is-active {
+  border-color: rgba(78, 205, 196, 0.28);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.45),
+    0 0 60px rgba(78, 205, 196, 0.08);
+}
+.ring-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ring-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+.ring-card-badge {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 0 8px rgba(229, 115, 153, 0.55));
+  animation: ringBadgeFlicker 1.6s ease-in-out infinite;
+}
+@keyframes ringBadgeFlicker {
+  0%, 100% { transform: scale(1) rotate(-2deg); }
+  50% { transform: scale(1.1) rotate(3deg); }
+}
+
+.ring-card-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 200px;
+  margin: 4px auto 0;
+}
+.streak-ring-svg { width: 100%; height: 100%; display: block; }
+.streak-ring-progress {
+  filter: drop-shadow(0 0 6px rgba(78, 205, 196, 0.45));
+  transition: stroke-dasharray 900ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: ringFillIn 900ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes ringFillIn { from { stroke-dasharray: 0 999; } }
+
+.ring-card-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ring-card-value {
+  font-size: clamp(2rem, 6vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1;
+}
+.ring-card-unit {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 4px;
+}
+.ring-card-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+.ring-card-meta strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tracker-teal);
+  letter-spacing: -0.01em;
+}
+
+/* ── Pulse activity card (WeeklyChart) ─────────────────── */
+.pulse-card .chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pulse-card-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.pulse-card-num {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1;
+}
+.pulse-card-unit {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: lowercase;
+}
+
+.pulse-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  height: 110px;
+  padding-top: 4px;
+}
+.pulse-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+.pulse-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.pulse-bar-fill {
+  width: 60%;
+  min-height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #f0abfc 0%, var(--tracker-accent) 55%, #a78bfa 100%);
+  box-shadow: 0 0 12px rgba(229, 115, 153, 0.35);
+  animation: pulseBarRise 700ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes pulseBarRise { from { height: 0 !important; opacity: 0.4; } }
+
+.pulse-col.is-empty .pulse-bar-fill {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+.pulse-col.is-today .pulse-bar-fill {
+  background: linear-gradient(180deg, #fbcfe8 0%, var(--tracker-accent) 50%, #c084fc 100%);
+  box-shadow:
+    0 0 16px rgba(229, 115, 153, 0.55),
+    0 0 28px rgba(167, 139, 250, 0.35);
+  width: 70%;
+}
+.pulse-day {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pulse-col.is-today .pulse-day { color: #e9d5ff; }
+
+/* ── Dual-line trend (TrendChart) ──────────────────────── */
+.dual-line-card { padding: 22px 22px 18px; }
+.dual-line-header {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.dual-line-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.dual-line-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dual-line-dot.today { background: var(--tracker-teal); box-shadow: 0 0 8px rgba(78, 205, 196, 0.6); }
+.dual-line-dot.avg {
+  background: transparent;
+  border: 1.5px dashed rgba(255, 255, 255, 0.5);
+}
+.dual-line-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.dual-line-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.dual-line-value em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 2px;
+}
+
+.dual-line-chart-wrap {
+  height: 150px;
+  margin: 6px 0 4px;
+  position: relative;
+}
+.dual-line-svg { width: 100%; height: 100%; overflow: visible; }
+.dual-line-actual {
+  filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.35));
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: dualLineDraw 1.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.dual-line-avg {
+  opacity: 0;
+  animation: dualLineFade 800ms ease 600ms forwards;
+}
+.dual-line-marker {
+  filter: drop-shadow(0 0 6px rgba(78, 205, 196, 0.7));
+  opacity: 0;
+  animation: dualLineFade 400ms ease 1.4s forwards;
+}
+@keyframes dualLineDraw { to { stroke-dashoffset: 0; } }
+@keyframes dualLineFade { to { opacity: 1; } }
+
+/* ── Multi-ring progress (MuscleChart) ─────────────────── */
+.progress-card { }
+.progress-card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0 2px;
+}
+.progress-rings-svg {
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+}
+.progress-ring-arc {
+  filter: drop-shadow(0 0 4px currentColor);
+  transition: stroke-dasharray 900ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: ringFillIn 900ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.progress-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.progress-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.progress-legend-emoji { font-size: 0.9rem; flex-shrink: 0; }
+.progress-legend-pct {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  min-width: 38px;
+}
+.progress-legend-name {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Volume goal partial-arc card ──────────────────────── */
+.volume-goal-card { display: flex; flex-direction: column; gap: 10px; }
+.volume-goal-body {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 160px;
+  margin: 0 auto;
+}
+.volume-goal-svg { width: 100%; height: 100%; display: block; }
+.volume-goal-arc {
+  filter: drop-shadow(0 0 8px rgba(229, 115, 153, 0.45));
+  animation: ringFillIn 900ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.volume-goal-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.volume-goal-pct {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+}
+.volume-goal-meta {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.volume-goal-meta strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--tracker-accent);
+}
+.volume-goal-meta span {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── PR card v2 ────────────────────────────────────────── */
+.tracker-page--v2 .pr-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+}
+.tracker-page--v2 .pr-weight { color: var(--tracker-teal); }
+.tracker-page--v2 .pr-delta { color: var(--tracker-lime); }
+.tracker-page--v2 .pr-delete-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+.tracker-page--v2 .pr-delete-btn:hover:not(:disabled) {
+  color: var(--tracker-pink);
+  border-color: rgba(232, 121, 171, 0.4);
+  background: rgba(229, 115, 153, 0.1);
+}
+
+/* PR delete — in-app confirm (replaces window.confirm) */
+.pr-delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  background: rgba(6, 5, 14, 0.82);
+  backdrop-filter: blur(12px) saturate(1.06);
+  -webkit-backdrop-filter: blur(12px) saturate(1.06);
+}
+.pr-delete-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 26px 24px 22px;
+  border-radius: 22px;
+  border: 1px solid var(--tracker-card-border);
+  background: var(--tracker-card-bg);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.pr-delete-modal-title {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 252, 0.96);
+}
+.pr-delete-modal-lead {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.76);
+}
+.pr-delete-modal-lead strong {
+  color: var(--tracker-teal);
+  font-weight: 700;
+}
+.pr-delete-modal-body {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.38);
+}
+.pr-delete-modal-error {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #fecaca;
+  background: rgba(185, 28, 28, 0.22);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.pr-delete-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+.pr-delete-modal-btn {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease,
+    opacity 0.12s ease;
+}
+.pr-delete-modal-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.pr-delete-modal-btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+.pr-delete-modal-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.pr-delete-modal-btn-danger {
+  border: 1px solid rgba(244, 114, 182, 0.45);
+  background: linear-gradient(
+    180deg,
+    rgba(251, 207, 232, 0.95) 0%,
+    rgba(229, 115, 153, 0.95) 42%,
+    rgba(168, 85, 247, 0.88) 100%
+  );
+  color: #140810;
+  box-shadow: 0 8px 28px rgba(229, 115, 153, 0.28);
+}
+.pr-delete-modal-btn-danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 34px rgba(229, 115, 153, 0.38);
+}
+
+/* ── Trend badge palette swap for v2 ───────────────────── */
+.tracker-page--v2 .trend-badge.is-up {
+  background: rgba(168, 230, 61, 0.15);
+  color: var(--tracker-lime);
+}
+.tracker-page--v2 .trend-badge.is-down {
+  background: rgba(244, 114, 182, 0.15);
+  color: var(--tracker-pink);
+}
+
+/* ── Log Workout card — aligns with Tracker v2 + fit-shell layout ── */
+.tracker-page--v2 .tracker-quick-add {
+  position: relative;
+  border-radius: 28px;
+  padding: 22px 20px 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: visible;
+  background: var(--tracker-card-bg);
+  border: 1px solid var(--tracker-card-border);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+.tracker-page--v2 .tracker-quick-add::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(100% 90% at 10% -10%, rgba(167, 139, 250, 0.1), transparent 52%);
+}
+
+.tracker-page--v2 .quick-add-header {
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+.tracker-page--v2 .quick-add-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.tracker-page--v2 .quick-add-exercise-wrap {
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 2;
+}
+.tracker-page--v2 .quick-add-exercise-wrap.is-suggesting {
+  z-index: 25;
+}
+
+.tracker-page--v2 .quick-add-input {
+  height: 48px;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(12, 12, 20, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.tracker-page--v2 .quick-add-input:focus {
+  border-color: rgba(139, 92, 246, 0.55);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+.tracker-page--v2 .quick-add-input::placeholder {
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.tracker-page--v2 .quick-add-suggestions {
+  border-radius: 16px;
+  background: rgba(14, 14, 22, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tracker-page--v2 .muscle-chip-row {
+  gap: 8px;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 0;
+}
+.tracker-page--v2 .muscle-chip {
+  padding: 7px 14px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.tracker-page--v2 .muscle-chip:hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.tracker-page--v2 .muscle-chip.is-selected {
+  color: #fffefd;
+  background: rgba(229, 115, 153, 0.16);
+  border-color: rgba(232, 121, 171, 0.75);
+  box-shadow:
+    0 0 0 1px rgba(167, 139, 250, 0.3),
+    0 4px 20px rgba(229, 115, 153, 0.15);
+}
+
+.tracker-page--v2 .quick-add-sets {
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+.tracker-page--v2 .sets-header-label {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.tracker-page--v2 .set-input {
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(12, 12, 20, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.tracker-page--v2 .set-input:focus {
+  border-color: rgba(139, 92, 246, 0.45);
+}
+.tracker-page--v2 .set-num {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.tracker-page--v2 .add-set-btn {
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  padding: 10px;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.tracker-page--v2 .quick-add-submit {
+  height: 48px;
+  border-radius: 16px;
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 252, 0.98);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  font-weight: 700;
+  background: linear-gradient(180deg, #f472b6 0%, #e879a9 38%, #a855f7 100%);
+  box-shadow:
+    0 6px 24px rgba(168, 85, 247, 0.35),
+    0 4px 16px rgba(229, 115, 153, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.tracker-page--v2 .quick-add-submit:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 32px rgba(168, 85, 247, 0.42),
+    0 6px 20px rgba(229, 115, 153, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.tracker-page--v2 .tracker-quick-add.is-saved {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(167, 139, 250, 0.18),
+    0 0 36px rgba(229, 115, 153, 0.1);
+}
 
