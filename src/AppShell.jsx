@@ -330,7 +330,7 @@
     }, [dicterOpen]);
 
     /* derive top bar visibility ------------------------------- */
-    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership'];
+    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership', 'home'];
     const showTopbar = !HIDE_TOPBAR.includes(route.name);
     const isFullScreenMode = route.name === 'runner' || route.name === 'dietRunner';
 
