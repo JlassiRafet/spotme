@@ -65,9 +65,9 @@
         <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
           <defs>
             <linearGradient id="smGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#7f8fff" />
-              <stop offset="56%" stopColor="#5fc8ff" />
-              <stop offset="100%" stopColor="#5f6dff" />
+              <stop offset="0%" stopColor="#00e5c0" />
+              <stop offset="56%" stopColor="#00c4a8" />
+              <stop offset="100%" stopColor="#00a892" />
             </linearGradient>
             <linearGradient id="smShine" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="rgba(255,255,255,0.42)" />
@@ -77,7 +77,7 @@
           </defs>
           <rect x="2" y="2" width="44" height="44" rx="12"
                 fill="url(#smGrad)"
-                stroke="rgba(188,214,255,0.48)"
+                stroke="rgba(0,229,192,0.4)"
                 strokeWidth="1" />
           <rect x="4" y="4" width="40" height="20" rx="10" fill="url(#smShine)" />
           <text x="24" y="31" textAnchor="middle"

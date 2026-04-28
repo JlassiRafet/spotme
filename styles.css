@@ -932,6 +932,8 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   width: 100%;
   min-width: 0;
   overflow-x: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Sticky nav ──────────────────────────────────────────── */
@@ -1375,29 +1377,54 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 
 /* ============================================================
    MARKETING — FRAMER DESIGN SYSTEM
-   Palette: #000 bg · #79CBCA teal accent · #a1a1a1 body
+   Palette: #060a0a bg · var(--acc-mint) teal accent · #a1a1a1 body
    Type: Oswald 700 display · Inter 300 body
    ============================================================ */
 .marketing-shell {
   background:
-    radial-gradient(ellipse 70% 50% at 10% -5%, rgba(109,122,255,0.22) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 45% at 90% 10%, rgba(76,208,255,0.18) 0%, transparent 52%),
-    linear-gradient(180deg, #080b16 0%, #0a1021 52%, #090d1b 100%);
-  color: #eef3ff;
+    radial-gradient(ellipse 60% 50% at 70% 30%, rgba(0,229,160,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,180,130,0.05) 0%, transparent 60%),
+    #060a0a;
+  color: #fff;
+  position: relative;
 }
-.marketing-nav.is-scrolled { background: rgba(8,12,28,0.82); border-bottom-color: rgba(165,190,255,0.2); }
+
+/* Fixed depth layer: subtle grid mesh + noise grain */
+.marketing-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size: 60px 60px, 60px 60px, 200px 200px;
+}
+
+.marketing-nav.is-scrolled { background: rgba(6,10,10,0.90); border-bottom-color: rgba(45,212,191,0.14); }
 .spotme-wordmark { color: #fff; }
 
-.marketing-badge { background: rgba(119,133,255,0.16); border-color: rgba(153,178,255,0.34); color: #a9b9ff; }
-.marketing-badge svg { color: #86d9ff; }
+.marketing-badge {
+  background: rgba(0,229,160,0.08);
+  border-color: rgba(0,229,160,0.20);
+  color: rgba(255,255,255,0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.marketing-badge svg {
+  color: var(--acc-mint);
+  filter: drop-shadow(0 0 5px rgba(0,229,160,0.65));
+}
 
 .hero-bg-blur {
   background:
-    radial-gradient(ellipse 70% 50% at 50% 40%, rgba(109,122,255,0.16) 0%, transparent 62%),
-    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(76,208,255,0.1) 0%, transparent 56%);
+    radial-gradient(ellipse 70% 60% at 65% 30%, rgba(0,229,160,0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 25% 75%, rgba(0,180,130,0.05) 0%, transparent 60%);
 }
-.hero-orb-1 { background: #6f80ff; }
-.hero-orb-2 { background: #53d2ff; }
+.hero-orb-1 { background: #00e5c0; opacity: 0.14; }
+.hero-orb-2 { background: #00b89a; opacity: 0.10; }
 
 .marketing-title {
   font-family: 'Oswald', sans-serif;
@@ -1408,21 +1435,38 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   line-height: 0.9;
   color: #fff;
   margin-bottom: 28px;
+  text-shadow: 0 0 80px rgba(255,255,255,0.08);
 }
 .marketing-title-accent {
-  background: linear-gradient(120deg, #8f9eff 0%, #58d8ff 55%, #9fa9ff 100%);
+  background: linear-gradient(120deg, #00e5c0 0%, #5efcdf 60%, #00e5c0 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 30px rgba(0,229,160,0.35)) drop-shadow(0 0 10px rgba(0,229,160,0.18));
 }
-.marketing-sub { font-family: 'Inter', sans-serif; font-weight: 300; font-size: 1rem; color: #a1a1a1; }
-.marketing-ghost { color: #7ed9ff; }
+.marketing-sub {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.75;
+}
+.marketing-ghost {
+  color: var(--acc-mint);
+  transition: transform 220ms cubic-bezier(0.22,1,0.36,1), text-decoration-color 200ms;
+  text-underline-offset: 4px;
+}
+.marketing-ghost:hover {
+  text-decoration: underline;
+  text-decoration-color: rgba(45,212,191,0.5);
+  transform: translateX(3px);
+}
 
-.marketing-stats-bar { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
-.marketing-stat { border-color: rgba(255,255,255,0.06); }
+.marketing-stats-bar { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.02); }
+.marketing-stat { border-color: rgba(255,255,255,0.05); }
 .marketing-stat:last-child { border-color: transparent; }
-.marketing-stat-value { color: #7bd4ff; }
+.marketing-stat-value { color: var(--acc-mint); }
 .marketing-stat-label { color: #6d6d6d; }
 
-.marketing-section-tag { color: #8fb2ff; background: rgba(115,130,255,0.14); border-color: rgba(141,170,255,0.3); }
+.marketing-section-tag { color: var(--acc-mint); background: rgba(45,212,191,0.08); border-color: rgba(45,212,191,0.22); }
 .marketing-section-title {
   font-family: 'Oswald', sans-serif;
   font-size: clamp(2rem, 5vw, 3.8rem);
@@ -1434,26 +1478,26 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 }
 
 .feature-card { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.01); }
-.feature-card:hover { border-color: rgba(145,176,255,0.32); box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(98,196,255,0.14); }
+.feature-card:hover { border-color: rgba(45,212,191,0.28); box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(45,212,191,0.1); }
 .feature-card-glass { background: linear-gradient(160deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.78) 100%); }
 .feature-card:hover .feature-card-glass { background: linear-gradient(160deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.65) 100%); }
-.feature-card-tag { color: #a6b6ff; background: rgba(115,130,255,0.18); border-color: rgba(145,176,255,0.3); }
-.feature-card-icon { color: #7fddff; }
+.feature-card-tag { color: var(--acc-mint); background: rgba(45,212,191,0.10); border-color: rgba(45,212,191,0.24); }
+.feature-card-icon { color: var(--acc-mint); }
 .feature-card-title { color: #fff; }
 .feature-card-body { color: #a1a1a1; }
 
 .how-step-card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.07); }
-.how-step-card:hover { border-color: rgba(141,170,255,0.28); box-shadow: 0 16px 48px rgba(0,0,0,0.7); }
-.how-step-num { color: #8dacff; }
+.how-step-card:hover { border-color: rgba(45,212,191,0.24); box-shadow: 0 16px 48px rgba(0,0,0,0.7); }
+.how-step-num { color: var(--acc-mint); }
 .how-step-title { color: #fff; }
 .how-step-body { color: #a1a1a1; }
 
 .marketing-cta-band {
-  background: linear-gradient(140deg, rgba(109,122,255,0.16) 0%, rgba(83,210,255,0.08) 44%, rgba(255,255,255,0.02) 100%), rgba(8,10,20,0.96);
-  border-color: rgba(141,170,255,0.3);
-  box-shadow: 0 0 60px rgba(97,189,255,0.1), inset 0 1px 0 rgba(141,170,255,0.18);
+  background: linear-gradient(140deg, rgba(45,212,191,0.10) 0%, rgba(45,212,191,0.04) 44%, rgba(255,255,255,0.01) 100%), rgba(9,9,9,0.96);
+  border-color: rgba(45,212,191,0.22);
+  box-shadow: 0 0 60px rgba(45,212,191,0.07), inset 0 1px 0 rgba(45,212,191,0.14);
 }
-.cta-band-glow { background: radial-gradient(ellipse, rgba(109,122,255,0.18) 0%, transparent 60%); }
+.cta-band-glow { background: radial-gradient(ellipse, rgba(45,212,191,0.12) 0%, transparent 60%); }
 .cta-band-title { color: #fff; }
 .cta-band-sub { color: #a1a1a1; }
 
@@ -1645,7 +1689,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   padding: 8px 20px; border-radius: 9999px; letter-spacing: 0.02em;
   transition: background 200ms, transform 150ms;
 }
-.nav-pill-cta:hover { background: #79CBCA; transform: scale(1.02); }
+.nav-pill-cta:hover { background: var(--acc-mint); transform: scale(1.02); }
 @media (max-width: 640px) {
   .nav-pill-links { display: none; }
   .marketing-nav-pill { max-width: calc(100% - 32px); }
@@ -2231,7 +2275,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   color: var(--ink-1);
 }
 .chat-empty-title span {
-  background: linear-gradient(120deg, #2dd4bf, #34d399);
+  background: linear-gradient(120deg, #00e5c0, #34d399);
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   font-weight: 300;
@@ -2724,7 +2768,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 }
 .send-btn svg { width: 16px; height: 16px; }
 .send-btn.is-ready {
-  background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+  background: linear-gradient(135deg, #00e5c0 0%, #00b89a 100%);
   color: #0b0b0d;
   border-color: transparent;
   box-shadow: 0 4px 16px rgba(45, 212, 191, 0.4);
@@ -5031,7 +5075,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   --ink-2:         #c9c9cf;
   --ink-3:         #6b6b73;
   --ink-4:         #3a3a40;
-  --acc-mint:      #2dd4bf;
+  --acc-mint:      #00e5c0;
   --acc-lime:      #c6e860;
   --acc-orange:    #ff9b3d;
   --acc-success:   #34d399;
@@ -5720,7 +5764,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   filter: contrast(1.1) saturate(1.1) brightness(1.05);
 }
 
-.fit-card-mint  { background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%); color: #052e2a; }
+.fit-card-mint  { background: linear-gradient(135deg, #00e5c0 0%, #00b89a 100%); color: #052e2a; }
 .fit-card-lime  { background: linear-gradient(135deg, #c6e860 0%, #a8d048 100%); color: #1f3000; }
 .fit-card-orange{ background: linear-gradient(135deg, #ff9b3d 0%, #f97316 100%); color: #3f1d00; }
 .fit-card-dark  { background: var(--bg-surface-1); color: var(--ink-1); }
@@ -6454,7 +6498,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .muscle-map-badge {
   background: rgba(45,212,191,0.15);
   border: 1px solid rgba(45,212,191,0.35);
-  color: #2dd4bf;
+  color: #00e5c0;
   font-size: 0.7rem;
   font-weight: 600;
   padding: 2px 8px;
@@ -6926,8 +6970,20 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   cursor: default;
 }
 
-/* Marketing page keeps its own teal but tighten contrast */
-.marketing-shell .btn-primary { color: #052e2a !important; }
+/* Marketing page — premium CTA upgrade */
+.marketing-shell .btn-primary {
+  color: #052e2a !important;
+  border: 1px solid rgba(0,255,180,0.6) !important;
+  box-shadow: 0 0 20px rgba(0,229,160,0.25), inset 0 1px 0 rgba(255,255,255,0.10);
+  transition: box-shadow 0.25s ease, filter 0.25s ease !important;
+}
+.marketing-shell .btn-primary .btn-label {
+  letter-spacing: 0.12em;
+}
+.marketing-shell .btn-primary:hover {
+  box-shadow: 0 0 35px rgba(0,229,160,0.45), inset 0 1px 0 rgba(255,255,255,0.14);
+  filter: brightness(1.06);
+}
 
 /* =========================================================
    Tracker v2 — Image 1 layout × Image 2 palette
