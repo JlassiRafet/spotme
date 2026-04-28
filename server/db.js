@@ -487,8 +487,8 @@ function seedPrograms() {
       difficulty: 'Intermediate', cover_color: 'mint',
       cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
       hero_image:  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=70',
-      total_minutes: 30, total_calories: 1100,
-      description: 'Quads, hamstrings, glutes — three key lower body lifts for strength and muscle.'
+      total_minutes: 42, total_calories: 1200,
+      description: 'Quads, hamstrings, glutes, calves — a realistic full lower body training session with strength and muscle-building focus.'
     },
     {
       id: 'core-beginner', category: 'muscle', name: 'Core',
@@ -591,15 +591,46 @@ function seedPrograms() {
         tips: 'Primary: quads, calves\nDrop resistance to near zero. Slow cadence to 60 rpm. Let heart rate come back down gradually over the full 10 minutes.' }
     ],
     'lower-pro': [
-      { name: 'Squats', sets: 4, reps: 8, minutes: 15,
+      {
+        name: 'Barbell Back Squat',
+        sets: 4,
+        reps: 8,
+        minutes: 14,
         thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
-        tips: 'Primary: quads, glutes\nFeet shoulder-width, bar on upper traps. Descend to parallel or below. Drive through heels, knees track over toes throughout.' },
-      { name: 'Romanian Deadlift', sets: 3, reps: 10, minutes: 10,
+        tips: 'Keep your chest up, sit back into the hips, and drive through your heels. Breathe in on the descent and power up on the concentric.'
+      },
+      {
+        name: 'Romanian Deadlift',
+        sets: 4,
+        reps: 10,
+        minutes: 10,
         thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
-        tips: 'Primary: hamstrings, glutes, lower-back\nHinge at hips with slight knee bend. Lower bar along legs until hamstring stretch. Drive hips forward to return.' },
-      { name: 'Leg Press', sets: 3, reps: 12, minutes: 5,
+        tips: 'Hinge from the hips with a soft knee. Keep the bar close to the legs and feel the stretch in the hamstrings, not the lower back.'
+      },
+      {
+        name: 'Bulgarian Split Squat',
+        sets: 3,
+        reps: 10,
+        minutes: 8,
         thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
-        tips: 'Primary: quads, glutes\nFeet shoulder-width on platform. Lower until 90°, press through heels. Keep lower back against pad throughout.' }
+        tips: 'Keep your front knee tracking over your toes and your torso upright. Use a split stance to load each leg individually for balance and strength.'
+      },
+      {
+        name: 'Hip Thrust',
+        sets: 3,
+        reps: 12,
+        minutes: 6,
+        thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+        tips: 'Pause and squeeze the glutes at the top of each rep. Keep your chin tucked slightly and your ribs down to isolate the hips.'
+      },
+      {
+        name: 'Standing Calf Raise',
+        sets: 3,
+        reps: 15,
+        minutes: 4,
+        thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+        tips: 'Use full range of motion: drop the heels down and press all the way up. Pause at the top to feel the contraction.'
+      }
     ],
     'core-beginner': [
       { name: 'Plank', sets: 3, reps: 1, minutes: 5,
@@ -757,6 +788,88 @@ function patchDietMacro() {
   persist();
 }
 patchDietMacro();
+
+function patchLowerProgram() {
+  const LOWER_SESSIONS = [
+    {
+      id: 'lower-pro-s1',
+      ord: 1,
+      name: 'Barbell Back Squat',
+      sets: 4,
+      reps: 8,
+      minutes: 14,
+      thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+      tips: 'Keep your chest up, sit back into the hips, and drive through your heels. Breathe in on the descent and power up on the concentric.'
+    },
+    {
+      id: 'lower-pro-s2',
+      ord: 2,
+      name: 'Romanian Deadlift',
+      sets: 4,
+      reps: 10,
+      minutes: 10,
+      thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+      tips: 'Hinge from the hips with a soft knee. Keep the bar close to the legs and feel the stretch in the hamstrings, not the lower back.'
+    },
+    {
+      id: 'lower-pro-s3',
+      ord: 3,
+      name: 'Bulgarian Split Squat',
+      sets: 3,
+      reps: 10,
+      minutes: 8,
+      thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+      tips: 'Keep your front knee tracking over your toes and your torso upright. Use a split stance to load each leg individually for balance and strength.'
+    },
+    {
+      id: 'lower-pro-s4',
+      ord: 4,
+      name: 'Hip Thrust',
+      sets: 3,
+      reps: 12,
+      minutes: 6,
+      thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=200&q=60',
+      tips: 'Pause and squeeze the glutes at the top of each rep. Keep your chin tucked slightly and your ribs down to isolate the hips.'
+    },
+    {
+      id: 'lower-pro-s5',
+      ord: 5,
+      name: 'Standing Calf Raise',
+      sets: 3,
+      reps: 15,
+      minutes: 4,
+      thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=200&q=60',
+      tips: 'Use full range of motion: drop the heels down and press all the way up. Pause at the top to feel the contraction.'
+    }
+  ];
+
+  sqlDb.exec(`
+    UPDATE programs
+    SET total_minutes = 42,
+        total_calories = 1200,
+        description = 'Quads, hamstrings, glutes, calves — a realistic full lower body training session with strength and muscle-building focus.'
+    WHERE id = 'lower-pro'
+  `);
+
+  sqlDb.exec(`DELETE FROM program_sessions WHERE program_id = 'lower-pro'`);
+
+  for (const s of LOWER_SESSIONS) {
+    stmts.insertProgramSession.run({
+      id: s.id,
+      program_id: 'lower-pro',
+      ord: s.ord,
+      name: s.name,
+      sets: s.sets,
+      reps: s.reps,
+      minutes: s.minutes,
+      thumbnail: s.thumbnail,
+      tips: s.tips
+    });
+  }
+
+  persist();
+}
+patchLowerProgram();
 
 function patchDietPrograms() {
   sqlDb.run(`DELETE FROM program_sessions WHERE program_id IN ('diet-vegetarian','diet-keto','diet-mediterranean')`);

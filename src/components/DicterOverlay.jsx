@@ -34,7 +34,7 @@
   }
 
   /* ---------- Overlay sheet ---------- */
-  function DicterOverlay({ profile, onClose }) {
+  function DicterOverlay({ profile, onClose, initialSession }) {
     const [chatNonce] = useState(0);
     const sheetRef = useRef(null);
 
@@ -78,7 +78,7 @@
               <SpotMe.ChatPage
                 key={chatNonce}
                 profile={profile}
-                initialSession={null}
+                initialSession={initialSession || null}
                 onSessionCreated={() => {}}
                 embedded
               />

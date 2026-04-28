@@ -80,7 +80,7 @@ app.get('/api/health', (_req, res) => {
     service: 'spotme-api',
     provider: 'groq',
     chatModel:   process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile',
-    visionModel: process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview',
+    visionModel: process.env.GROQ_VISION_MODEL || 'llama-3.2-90b-vision-preview',
     db: db.open ? 'open' : 'closed'
   });
 });
@@ -147,7 +147,7 @@ app.listen(port, '0.0.0.0', () => {
     }
   } catch {}
   console.log(`[spotme] Chat model:   ${process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile'}`);
-  console.log(`[spotme] Vision model: ${process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview'}`);
+  console.log(`[spotme] Vision model: ${process.env.GROQ_VISION_MODEL || 'llama-3.2-90b-vision-preview'}`);
   console.log(`[spotme] Open http://localhost:${port} in your browser.\n`);
 });
 

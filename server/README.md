@@ -46,7 +46,7 @@ Expected output:
 ```
 [spotme] API + frontend listening on http://localhost:8787
 [spotme] Chat model:   llama-3.3-70b-versatile
-[spotme] Vision model: llama-3.2-11b-vision-preview
+[spotme] Vision model: meta-llama/llama-4-scout-17b-16e-instruct
 [spotme] Open http://localhost:8787 in your browser.
 ```
 
@@ -69,12 +69,8 @@ Your Groq key is wrong or revoked. Generate a new one at https://console.groq.co
 **429 rate-limit errors**
 You're sending requests faster than Groq's free tier allows (30/min). Wait a minute. If it's persistent, you may need to upgrade or space out test requests.
 
-**404 model not found**
-Groq occasionally renames or rotates which models are available on the free tier. If the default fails, try setting:
-- `GROQ_CHAT_MODEL="llama-3.1-70b-versatile"` (older)
-- `GROQ_VISION_MODEL="llama-3.2-90b-vision-preview"` (alternate)
-
-Check https://console.groq.com/docs/models for the current list.
+**404 / model_decommissioned error**
+Groq rotates models. Check https://console.groq.com/docs/deprecations for the current replacement and update `GROQ_VISION_MODEL` or `GROQ_CHAT_MODEL` in `.env` accordingly.
 
 **Image upload fails with 413**
 The image is over 4 MB. Resize it.

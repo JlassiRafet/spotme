@@ -82,16 +82,6 @@
             </div>
             <div className="fit-hero-actions">
               <Avatar profile={profile} size={44} onClick={onOpenProfile} />
-              <button
-                type="button"
-                className="fit-icon-btn"
-                onClick={onOpenBell}
-                aria-label="Notifications"
-                style={{ position: 'relative' }}
-              >
-                <span style={{ width: 18, height: 18, display: 'inline-flex' }}><BellIcon active /></span>
-                <span className="dot" />
-              </button>
             </div>
           </header>
 

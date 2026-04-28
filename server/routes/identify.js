@@ -24,7 +24,7 @@ import { ApiError, requireAuth, handler } from './_shared.js';
 export const identifyRoutes = express.Router();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
+const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-90b-vision-preview';
 
 const IDENTIFY_SYSTEM = `You are SpotMe's vision coach. A user uploaded a photo from a gym.
 Identify the primary piece of equipment or exercise shown.
