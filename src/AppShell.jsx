@@ -42,6 +42,7 @@
       case 'program':     return programId ? `/program/${encodeURIComponent(programId)}` : '/programs';
       case 'diet':        return '/diet';
       case 'membership':  return '/membership';
+      case 'book-coach':  return '/book-coach';
       case 'profile':     return '/profile';
       case 'history':     return '/history';
       // Transient — stay at current URL
@@ -61,6 +62,7 @@
       case 'program':    return seg1 ? { name: 'program', programId: decodeURIComponent(seg1) } : { name: 'programs' };
       case 'diet':       return { name: 'diet' };
       case 'membership': return { name: 'membership' };
+      case 'book-coach': return { name: 'book-coach' };
       case 'profile':    return { name: 'profile' };
       case 'history':    return { name: 'history' };
       default:           return { name: 'home' };
@@ -196,12 +198,14 @@
 
   /* ---------- Sidebar (desktop) ---------- */
   function Sidebar({ profile, activeName, onNavigate, onOpenProfile }) {
+    const isPro = profile?.plan === 'pro';
     const NAV = [
       { name: 'home',       label: 'Home',       Icon: HomeIcon },
       { name: 'activities', label: 'Activities', Icon: CalendarIcon },
       { name: 'programs',   label: 'Programs',   Icon: DumbbellIcon },
       { name: 'diet',       label: 'Nutrition',  Icon: LeafIcon },
-      { name: 'membership', label: 'Membership', Icon: CrownIcon }
+      { name: 'membership', label: 'Membership', Icon: CrownIcon },
+      ...(isPro ? [{ name: 'book-coach', label: 'Book a Coach', Icon: CalendarIcon, pro: true }] : []),
     ];
     return (
       <aside className="fit-sidebar">
@@ -249,6 +253,26 @@
     );
   }
 
+  /* ── Pro success modal ─────────────────────────────────────── */
+  function ProSuccessModal({ onClose }) {
+    useEffect(() => {
+      const id = setTimeout(onClose, 4500);
+      return () => clearTimeout(id);
+    }, [onClose]);
+    return (
+      <div className="pro-success-overlay" onClick={onClose}>
+        <div className="pro-success-modal" onClick={e => e.stopPropagation()}>
+          <div className="pro-success-icon">🎉</div>
+          <h2 className="pro-success-title">You're now a PRO member!</h2>
+          <p className="pro-success-sub">Enjoy unlimited AI coaching and all premium features.</p>
+          <div className="pro-success-badge"><span>PRO</span></div>
+          <button type="button" className="pro-success-close" onClick={onClose}>Got it →</button>
+          <div className="pro-success-timer" />
+        </div>
+      </div>
+    );
+  }
+
   /* ============================================================
      AppShell
      ============================================================ */
@@ -258,6 +282,7 @@
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [dicterOpen, setDicterOpen] = useState(false);
     const [bellPulse, setBellPulse] = useState(true);
+    const [showProSuccess, setShowProSuccess] = useState(false);
 
     /* navigate / back ----------------------------------------- */
     const navigate = useCallback((name, params = {}) => {
@@ -292,28 +317,54 @@
       return () => window.removeEventListener('popstate', onPop);
     }, []);
 
-    /* Stripe Checkout success — POST /subscription/verify, update profile */
+    /* Stripe Checkout success — verify session, update profile, redirect to book-coach */
     useEffect(() => {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('checkout') !== 'success' || !params.get('sid')) return undefined;
+      if (params.get('checkout') !== 'success') return undefined;
+
+      const sessionId = params.get('sid') || '';
       let cancelled = false;
+
+      // Clean URL immediately
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('checkout');
+        url.searchParams.delete('sid');
+        url.searchParams.delete('page');
+        history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams}` : ''));
+      } catch (_) {}
+
+      // Show success modal right away
+      setShowProSuccess(true);
+
       (async () => {
-        const r = await SpotMe.api.finalizeStripeCheckoutFromUrl();
-        if (cancelled) return;
-        if (!r.skipped && r.ok && r.data?.user) {
-          onUpdateProfile(r.data.user);
+        // Verify the checkout session directly — upgrades DB without waiting for webhook
+        if (sessionId) {
+          const r = await SpotMe.api.request('/api/subscription/verify', {
+            method: 'POST', body: { sessionId },
+          });
+          if (cancelled) return;
+          if (r.ok && r.data?.user) {
+            onUpdateProfile(r.data.user);
+          }
+        } else {
+          // Fallback: poll /api/auth/me
+          let attempts = 0;
+          const iv = setInterval(async () => {
+            if (cancelled) { clearInterval(iv); return; }
+            attempts++;
+            const r = await SpotMe.api.me();
+            if (r.ok && r.data?.user) {
+              onUpdateProfile(r.data.user);
+              if (r.data.user.plan === 'pro' || attempts >= 10) clearInterval(iv);
+            } else { clearInterval(iv); }
+          }, 2000);
         }
-        if (!r.skipped && r.ok) {
-          try {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('checkout');
-            url.searchParams.delete('sid');
-            url.searchParams.delete('page');
-            const qs = url.searchParams.toString();
-            history.replaceState({}, '', url.pathname + (qs ? `?${qs}` : '') + url.hash);
-          } catch (_) {}
-        }
+
+        // Navigate to Book a Coach page
+        if (!cancelled) navigate('book-coach');
       })();
+
       return () => { cancelled = true; };
     }, [onUpdateProfile]);
 
@@ -336,6 +387,8 @@
 
     /* render -------------------------------------------------- */
     return (
+      <>
+      {showProSuccess && <ProSuccessModal onClose={() => setShowProSuccess(false)} />}
       <div className="fit-shell">
         <div className="fit-shell-bg-blob-1" aria-hidden="true" />
         <div className="fit-shell-bg-blob-2" aria-hidden="true" />
@@ -452,6 +505,13 @@
             />
           )}
 
+          {route.name === 'book-coach' && SpotMe.BookCoachPage && (
+            <SpotMe.BookCoachPage
+              profile={profile}
+              onNavigate={navigate}
+            />
+          )}
+
           {route.name === 'profile' && SpotMe.ProfilePage && (
             <div className="fit-page" style={{ paddingTop: 12 }}>
               <SpotMe.ProfilePage
@@ -530,6 +590,7 @@
           />
         )}
       </div>
+      </>
     );
   }
 
