@@ -50,11 +50,112 @@
 
   /* ── Data ──────────────────────────────────────────────── */
   const STATS = [
-    { value: '< 1s',  label: 'AI response time' },
-    { value: '70B',   label: 'Parameter model' },
-    { value: '∞',     label: 'Session memory' },
-    { value: '100%',  label: 'Private by default' },
+    { label: 'AI response time', kind: 'count', prefix: '< ', from: 0, to: 1, suffix: 's' },
+    { label: 'Parameter model', kind: 'count', from: 0, to: 70, suffix: 'B', prefix: '' },
+    { label: 'Session memory', kind: 'symbol', value: '∞' },
+    { label: 'Private by default', kind: 'count', from: 0, to: 100, suffix: '%', prefix: '' },
   ];
+
+  function formatCountStat(s, n) {
+    const num = typeof n === 'number' ? Math.round(n) : n;
+    return `${s.prefix ?? ''}${num}${s.suffix ?? ''}`;
+  }
+
+  /* ── Stats bar — Motion count-up when in view (stagger order) ─ */
+  function AnimatedStat({ stat, index, active }) {
+    const symRef = useRef(null);
+    const [display, setDisplay] = useState(() =>
+      stat.kind === 'symbol' ? stat.value : formatCountStat(stat, stat.from));
+
+    useEffect(() => {
+      if (!active) return undefined;
+
+      let cancelled = false;
+      let ctrl;
+      const M = typeof window !== 'undefined' ? window.Motion : null;
+      const staggerMs = index * 110;
+
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        if (!M?.animate) {
+          if (stat.kind === 'symbol') {
+            const el = symRef.current;
+            if (el) {
+              el.style.opacity = '1';
+              el.style.transform = '';
+            }
+          } else setDisplay(formatCountStat(stat, stat.to));
+          return;
+        }
+
+        if (stat.kind === 'symbol') {
+          const el = symRef.current;
+          if (!el) return;
+          ctrl = M.animate(
+            el,
+            { opacity: 1, scale: 1 },
+            { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
+          );
+          return;
+        }
+
+        ctrl = M.animate(stat.from, stat.to, {
+          duration: 1.05,
+          ease: [0.22, 1, 0.36, 1],
+          onUpdate: (latest) => setDisplay(formatCountStat(stat, latest)),
+          onComplete: () => setDisplay(formatCountStat(stat, stat.to)),
+        });
+      }, staggerMs);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+        ctrl?.stop?.();
+      };
+    }, [active, stat, index]);
+
+    if (stat.kind === 'symbol') {
+      return (
+        <div className="marketing-stat">
+          <div
+            ref={symRef}
+            className="marketing-stat-value marketing-stat-value--infinity"
+          >
+            {stat.value}
+          </div>
+          <div className="marketing-stat-label">{stat.label}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="marketing-stat">
+        <div className="marketing-stat-value">{display}</div>
+        <div className="marketing-stat-label">{stat.label}</div>
+      </div>
+    );
+  }
+
+  function AnimatedStatsSection() {
+    const [ref, inView] = useInView(0.12);
+    return (
+      <div
+        ref={ref}
+        style={{
+          opacity: inView ? 1 : 0,
+          transform: inView ? 'none' : 'translateY(28px)',
+          transition:
+            'opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
+      >
+        <div className="marketing-stats-bar">
+          {STATS.map((s, i) => (
+            <AnimatedStat key={i} stat={s} index={i} active={inView} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const FEATURES = [
     {
@@ -277,16 +378,7 @@
         </main>
 
         {/* ── Stats bar ───────────────────────────────────────── */}
-        <Reveal>
-          <div className="marketing-stats-bar">
-            {STATS.map((s, i) => (
-              <div key={i} className="marketing-stat">
-                <div className="marketing-stat-value">{s.value}</div>
-                <div className="marketing-stat-label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+        <AnimatedStatsSection />
 
         {/* ── Features ────────────────────────────────────────── */}
         <section id="features" className="marketing-features-section" style={{ paddingTop: 80 }}>
