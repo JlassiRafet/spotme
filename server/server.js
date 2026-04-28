@@ -19,7 +19,8 @@ import { authRoutes }     from './routes/auth.js';
 import { chatRoutes }     from './routes/chat.js';
 import { identifyRoutes } from './routes/identify.js';
 import { sessionRoutes }  from './routes/sessions.js';
-import { profileRoutes }  from './routes/profile.js';
+import { profileRoutes }    from './routes/profile.js';
+import { transcribeRoutes } from './routes/transcribe.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -81,6 +82,7 @@ app.use('/api/chat',       chatRoutes);
 app.use('/api/identify',   identifyRoutes);
 app.use('/api/sessions',   sessionRoutes);
 app.use('/api/profile',    profileRoutes);
+app.use('/api/transcribe', transcribeRoutes);
 
 /* Serve the frontend files from the parent folder. */
 const frontendDir = path.resolve(__dirname, '..');

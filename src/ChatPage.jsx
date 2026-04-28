@@ -86,6 +86,93 @@
   function ChatInput({ value, onChange, onSend, attachments, onAttach, onRemoveAttachment, disabled, autoFocus }) {
     const taRef = useRef(null);
     const wrapRef = useRef(null);
+    const [listening,    setListening]    = useState(false);
+    const [transcribing, setTranscribing] = useState(false);
+    const mediaRecorderRef = useRef(null);
+    const chunksRef        = useRef([]);
+    const streamRef        = useRef(null);
+
+    const voiceSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+    const toggleVoice = useCallback(async () => {
+      if (transcribing) return;
+
+      // ── Stop ───────────────────────────────────────────────────
+      if (listening) {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+        return;
+      }
+
+      // ── Start ──────────────────────────────────────────────────
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        console.warn('[voice] Mic access denied');
+        return;
+      }
+      streamRef.current = stream;
+      chunksRef.current = [];
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : '';
+
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      mediaRecorderRef.current = mr;
+
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+
+      mr.onstart = () => setListening(true);
+
+      mr.onstop = async () => {
+        setListening(false);
+        stream.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+
+        const chunks = chunksRef.current;
+        if (!chunks.length) return;
+
+        setTranscribing(true);
+        try {
+          const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
+          const fd   = new FormData();
+          fd.append('audio', blob, 'recording.webm');
+
+          const token = localStorage.getItem('spotme.token');
+          const resp  = await fetch('/api/transcribe', {
+            method:  'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body:    fd
+          });
+          const json = await resp.json();
+          if (json.text) {
+            const base = value || '';
+            const sep  = base && !base.endsWith(' ') ? ' ' : '';
+            onChange(base + sep + json.text);
+          }
+        } catch (err) {
+          console.warn('[voice] Transcription error:', err);
+        } finally {
+          setTranscribing(false);
+          setTimeout(() => taRef.current?.focus(), 60);
+        }
+      };
+
+      mr.start();
+    }, [listening, transcribing, value, onChange]);
+
+    // Cleanup on unmount
+    useEffect(() => () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      streamRef.current?.getTracks().forEach(t => t.stop());
+    }, []);
 
     useEffect(() => {
       if (autoFocus && taRef.current) taRef.current.focus();
@@ -174,10 +261,10 @@
           <PlusMenu onAttach={onAttach} />
           <textarea
             ref={taRef}
-            className="chat-input-textarea"
-            placeholder="Ask anything…"
+            className={`chat-input-textarea${listening ? ' is-listening' : ''}`}
+            placeholder={listening ? 'Recording…' : transcribing ? 'Transcribing…' : 'Ask anything…'}
             value={value}
-            onChange={e => onChange(e.target.value)}
+            onChange={e => { if (!listening && !transcribing) onChange(e.target.value); }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -187,8 +274,16 @@
             rows={1}
           />
           <div className="chat-input-actions">
-            <button type="button" className="icon-btn" aria-label="Voice input" title="Voice (coming soon)">
+            <button
+              type="button"
+              className={`icon-btn mic-btn${(listening || transcribing) ? ' is-recording' : ''}${!voiceSupported ? ' is-disabled' : ''}`}
+              aria-label={(listening || transcribing) ? 'Stop recording' : 'Voice input'}
+              title={!voiceSupported ? 'Voice not supported in this browser' : listening ? 'Tap to stop' : transcribing ? 'Transcribing…' : 'Voice input'}
+              onClick={toggleVoice}
+              disabled={!voiceSupported || transcribing}
+            >
               <MicIcon />
+              {(listening || transcribing) && <span className="mic-pulse-ring" aria-hidden="true" />}
             </button>
             <button type="button"
                     className={`send-btn${value.trim() ? ' is-ready' : ''}`}
@@ -199,6 +294,26 @@
             </button>
           </div>
         </div>
+
+        {/* Voice status bar — slides in when recording or transcribing */}
+        {(listening || transcribing) && (
+          <div className="voice-status-bar">
+            <span className="voice-waveform" aria-hidden="true">
+              <span /><span /><span /><span /><span />
+            </span>
+            <span className="voice-status-text">
+              {transcribing
+                ? <span className="voice-idle">Transcribing…</span>
+                : <span className="voice-idle">Recording — tap Stop when done</span>
+              }
+            </span>
+            {listening && (
+              <button type="button" className="voice-stop-btn" onClick={toggleVoice} aria-label="Stop recording">
+                Stop
+              </button>
+            )}
+          </div>
+        )}
       </div>
     );
   }

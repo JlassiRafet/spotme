@@ -27,7 +27,7 @@ export const chatRoutes = express.Router();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const CHAT_MODEL   = process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile';
-const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-scout-17b-16e-instruct';
+const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
 
 /* ---------- system prompt ---------- */
 

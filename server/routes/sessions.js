@@ -46,7 +46,7 @@ sessionRoutes.get('/:id', requireAuth, handler((req, res) => {
     content:       m.content,
     imageDataUrl:  m.image_data_url,
     structured:    m.structured_json ? JSON.parse(m.structured_json) : null,
-    createdAt:     m.created_at
+    createdAt:     m.created_at * 1000
   }));
 
   res.json({

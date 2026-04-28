@@ -21,14 +21,35 @@
       "Skill(update-config)",
       "Skill(update-config:*)",
       "Bash(npx -y @playwriter/install-mcp --oauth no \"https://mcp.unframer.co/mcp?id=b6c8f7cc257f887d59fe3dfaf89a49c09ead089bf5a4b8bb0d1fa951b7cff6c8&secret=3Lw6V0rTRso2Bdis476GwU55L3stGuke\")",
-      "Bash(claude mcp *)"
+      "Bash(claude mcp *)",
+      "Read(//c/Users/Rafet/Documents/**)",
+      "Bash(git -C \"c:/Users/Rafet/Documents/spotme\" diff master..feat/neon-ui -- styles.css)",
+      "Bash(git -C \"c:/Users/Rafet/Documents/spotme\" show feat/neon-ui:styles.css)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "mcp__unframer__getProjectXml",
+      "mcp__unframer__getNodeXml",
+      "mcp__unframer__getProjectWebsiteUrl",
+      "mcp__unframer__updateXmlForNode",
+      "mcp__unframer__manageColorStyle",
+      "PowerShell(winget install --id GitHub.cli --silent --accept-package-agreements --accept-source-agreements 2>&1)",
+      "Bash(node -e \"const p=require\\('C:/Users/Rafet/Documents/spotme/server/package.json'\\); console.log\\(p.dependencies['groq-sdk'], p.dependencies['multer']\\)\")",
+      "Bash(node -e \"const g = require\\('C:/Users/Rafet/Documents/spotme/server/node_modules/groq-sdk'\\); console.log\\(Object.keys\\(g\\)\\)\")",
+      "Bash(node --input-type=module)",
+      "Bash(chmod +x \"C:/Users/Rafet/Documents/spotme/.git/hooks/post-commit\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Rafet\\Documents\\spotme\\.claude",
       "C:\\Users\\Rafet\\Documents\\spotme-history\\src",
       "C:\\Users\\Rafet\\Documents\\spotme-api\\src",
       "C:\\Users\\Rafet\\Documents\\spotme-streaming\\server\\routes",
-      "C:\\Users\\Rafet\\Documents\\spotme-streaming\\src"
+      "C:\\Users\\Rafet\\Documents\\spotme-streaming\\src",
+      "c:\\Users\\Rafet\\Documents\\spotme\\graphify-out",
+      "C:\\Users\\Rafet\\Documents\\spotme-testing\\server\\tests\\helpers",
+      "C:\\Users\\Rafet\\Documents\\spotme-testing\\server\\tests\\integration",
+      "C:\\Users\\Rafet\\Documents\\spotme-testing\\server\\tests\\k6",
+      "C:\\Users\\Rafet\\Documents\\spotme-testing\\server\\tests\\docs",
+      "C:\\Users\\Rafet\\Documents\\spotme-testing\\server"
     ]
   }
 }
