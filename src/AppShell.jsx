@@ -184,7 +184,7 @@
             <Avatar profile={profile} size={40} />
             <div style={{ minWidth: 0 }}>
               <div className="profile-chip-name">{displayName}</div>
-              <div style={{ fontSize: '0.75rem', color: '#5c7aa8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.email}</div>
+              <div style={{ fontSize: '0.75rem', color: '#7e95c9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile.email}</div>
             </div>
           </div>
 

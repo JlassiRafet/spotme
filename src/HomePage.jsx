@@ -225,10 +225,10 @@
   /* ── Main page ──────────────────────────────────────────── */
   function HomePage({ onGoToLogin, onGoToSignup }) {
     return (
-      <div className="marketing-shell">
+      <div className="marketing-shell" style={{ marginTop: 0, paddingTop: 0 }}>
 
         {/* ── Pill nav ────────────────────────────────────────── */}
-        <nav className="marketing-nav-pill">
+        <nav className="marketing-nav-pill" style={{ marginTop: 0, top: 0 }}>
           <div className="nav-pill-brand">
             <SpotMeLogo size={28} />
             <span>SpotMe</span>
@@ -245,7 +245,7 @@
         </nav>
 
         {/* ── Hero ────────────────────────────────────────────── */}
-        <main className="marketing-hero" style={{ paddingTop: 80, paddingBottom: 80 }}>
+        <main className="marketing-hero" style={{ paddingTop: 0, marginTop: 0 }}>
           <div className="hero-bg-blur" aria-hidden="true" />
           <div className="hero-orb hero-orb-1" aria-hidden="true" />
           <div className="hero-orb hero-orb-2" aria-hidden="true" />
