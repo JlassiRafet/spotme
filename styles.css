@@ -5629,7 +5629,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   font-family: inherit;
   white-space: nowrap;
 }
-.fit-chip:hover { background: var(--bg-surface-3); }
+.fit-chip:not(.is-active):hover { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
 .fit-chip.is-active {
   background: var(--acc-mint);
   color: #0b0b0d;
@@ -5667,6 +5667,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .fit-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  filter: brightness(1.1);
 }
 .fit-card-img {
   position: absolute;
@@ -5712,11 +5713,19 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   mix-blend-mode: luminosity;
   filter: contrast(1.1) saturate(0) brightness(1.1);
 }
+/* Purple / pink: multiply blends photo with vivid gradient */
+.fit-card-purple .fit-card-img img,
+.fit-card-pink   .fit-card-img img {
+  mix-blend-mode: multiply;
+  filter: contrast(1.1) saturate(1.1) brightness(1.05);
+}
 
 .fit-card-mint  { background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%); color: #052e2a; }
 .fit-card-lime  { background: linear-gradient(135deg, #c6e860 0%, #a8d048 100%); color: #1f3000; }
 .fit-card-orange{ background: linear-gradient(135deg, #ff9b3d 0%, #f97316 100%); color: #3f1d00; }
 .fit-card-dark  { background: var(--bg-surface-1); color: var(--ink-1); }
+.fit-card-purple{ background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: #fff; }
+.fit-card-pink  { background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%); color: #fff; }
 
 .fit-card-tag {
   display: inline-block;
@@ -8809,3 +8818,8 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 [data-theme="light"] .pro-success-modal { background: linear-gradient(160deg,#e8faf8 0%,#f0fffe 100%); }
 [data-theme="light"] .pro-success-title { color: #0a2422; }
 [data-theme="light"] .pro-success-sub { color: #0a6c64; }
+
+/* Purple / pink cards — slightly reduced overlay opacity in light mode */
+[data-theme="light"] .fit-card-purple { background: linear-gradient(135deg, rgba(124,58,237,0.88) 0%, rgba(91,33,182,0.92) 100%); }
+[data-theme="light"] .fit-card-pink   { background: linear-gradient(135deg, rgba(236,72,153,0.88) 0%, rgba(190,24,93,0.92) 100%); }
+[data-theme="light"] .fit-chip:not(.is-active):hover { background: rgba(139,92,246,0.12); color: #6d28d9; border-color: rgba(139,92,246,0.25); }
