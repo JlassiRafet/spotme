@@ -222,7 +222,7 @@
 
   /* NAV_SECTIONS is computed inside the component so labels re-translate live */
 
-  function ProfilePage({ profile, onUpdateProfile, onDeleteAccount, onLogout, initialSection }) {
+  function ProfilePage({ profile, onNavigate, onUpdateProfile, onDeleteAccount, onLogout, initialSection }) {
     const fileInputRef = useRef(null);
     const { t } = SpotMe.useTranslation();
 
@@ -444,13 +444,13 @@
           <div className={`settings-panel${activeSection === 'about' ? ' is-active' : ''}`}>
             <div className="settings-section-label">{t('settings.about')}</div>
             <div className="settings-card">
-              <SettingsRow label={t('settings.reportBug')} onClick={comingSoon} />
+              <SettingsRow label={t('settings.reportBug')} onClick={() => window.open('mailto:support@spotme.ai?subject=Bug%20Report', '_blank')} />
               <div className="settings-card-divider" />
-              <SettingsRow label={t('settings.helpCenter')} onClick={comingSoon} />
+              <SettingsRow label={t('settings.helpCenter')} onClick={() => onNavigate('help-center')} />
               <div className="settings-card-divider" />
-              <SettingsRow label={t('settings.terms')} onClick={comingSoon} />
+              <SettingsRow label={t('settings.terms')} onClick={() => onNavigate('terms')} />
               <div className="settings-card-divider" />
-              <SettingsRow label={t('settings.privacy')} onClick={comingSoon} />
+              <SettingsRow label={t('settings.privacy')} onClick={() => onNavigate('privacy')} />
             </div>
           </div>
 
