@@ -2435,12 +2435,14 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Header */
 .identify-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
@@ -2485,6 +2487,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 .identify-body-maps {
   display: flex;
@@ -2495,7 +2498,13 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 }
 .identify-body-maps > .muscle-map-panel + .muscle-map-panel { margin-top: 0; }
 /* side-by-side when both views shown */
-.identify-body-maps { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+.identify-body-maps { 
+  display: flex;
+  flex-direction: row; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+  justify-content: center;
+}
 
 .muscle-map-panel {
   display: flex;
@@ -2515,6 +2524,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .muscle-map-legend {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 0.68rem;
   color: #5c7aa8;
@@ -2535,7 +2545,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex: 1;
+  flex: 1 1 200px;
   min-width: 0;
 }
 .identify-muscle-group { display: flex; flex-direction: column; gap: 6px; }
