@@ -925,6 +925,12 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   background: #0c0601;
   position: relative;
   z-index: 1;
+}
+/* Isolate horizontal clipping so sticky nav (sibling above) sticks to viewport. */
+.marketing-shell-body {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
   overflow-x: hidden;
 }
 
@@ -1607,9 +1613,10 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   max-width: 700px;
   margin: 0 auto;
   position: sticky;
-  top: 0;
-  z-index: 100;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  z-index: 150;
   width: calc(100% - 48px);
+  flex-shrink: 0;
 }
 .nav-pill-brand {
   display: flex; align-items: center; gap: 10px;

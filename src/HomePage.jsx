@@ -329,7 +329,7 @@
       <div className="marketing-shell" style={{ marginTop: 0, paddingTop: 0 }}>
 
         {/* ── Pill nav ────────────────────────────────────────── */}
-        <nav className="marketing-nav-pill" style={{ marginTop: 0, top: 0 }}>
+        <nav className="marketing-nav-pill">
           <div className="nav-pill-brand">
             <SpotMeLogo size={28} />
             <span>SpotMe</span>
@@ -344,6 +344,8 @@
             <button type="button" className="nav-pill-cta" onClick={onGoToSignup}>Get started</button>
           </div>
         </nav>
+
+        <div className="marketing-shell-body">
 
         {/* ── Hero ────────────────────────────────────────────── */}
         <main className="marketing-hero" style={{ paddingTop: 0, marginTop: 0 }}>
@@ -497,6 +499,8 @@
           </div>
           <div className="marketing-footer-wordmark" aria-hidden="true">SPOTME</div>
         </footer>
+
+        </div>
 
       </div>
     );
