@@ -49,8 +49,9 @@ export async function createStripeCheckoutSession(req) {
   }
 
   const origin = req.headers.origin || `http://localhost:${process.env.PORT || 8787}`;
-  const successUrl = `${origin}/?page=plans&checkout=success&sid={CHECKOUT_SESSION_ID}`;
-  const cancelUrl  = `${origin}/?page=plans&checkout=canceled`;
+  /* Path-based SPA: land on /membership so checkout=success & sid survive */
+  const successUrl = `${origin}/membership?checkout=success&sid={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${origin}/membership?checkout=canceled`;
 
   const params = {
     mode:                'subscription',
@@ -139,8 +140,14 @@ subscriptionRoutes.post('/verify', requireAuth, handler(async (req, res) => {
     return res.json({ ok: false, plan: req.user.plan || 'free' });
   }
 
-  if (session.payment_status !== 'paid' && session.status !== 'complete') {
-    return res.json({ ok: false, plan: 'free' });
+  /* Subscription checkout completes with status complete; trials may use no_payment_required */
+  if (session.status !== 'complete') {
+    return res.json({ ok: false, plan: req.user.plan || 'free', error: 'checkout_not_complete' });
+  }
+
+  const metaUid = session.metadata?.spotme_user_id;
+  if (metaUid != null && String(metaUid) !== String(req.user.id)) {
+    return res.json({ ok: false, plan: req.user.plan || 'free', error: 'wrong_account' });
   }
 
   const sub = session.subscription;
@@ -167,9 +174,7 @@ subscriptionRoutes.post('/verify', requireAuth, handler(async (req, res) => {
     });
   }
 
-  // Return fresh user profile
   const updated = stmts.getUserById.get(req.user.id);
-  const { publicUser } = await import('./_shared.js');
   res.json({ ok: true, plan: 'pro', user: publicUser(updated) });
 }));
 
@@ -183,8 +188,8 @@ subscriptionRoutes.post('/portal', requireAuth, handler(async (req, res) => {
     throw new ApiError(400, 'No billing account found. Please upgrade first.');
   }
 
-  const origin    = req.headers.origin || `http://localhost:${process.env.PORT || 8787}`;
-  const returnUrl = `${origin}/?page=plans`;
+  const origin = req.headers.origin || `http://localhost:${process.env.PORT || 8787}`;
+  const returnUrl = `${origin}/membership`;
 
   const portal = await s.billingPortal.sessions.create({
     customer:   req.user.stripe_customer_id,

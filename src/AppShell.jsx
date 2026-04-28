@@ -292,6 +292,31 @@
       return () => window.removeEventListener('popstate', onPop);
     }, []);
 
+    /* Stripe Checkout success — POST /subscription/verify, update profile */
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') !== 'success' || !params.get('sid')) return undefined;
+      let cancelled = false;
+      (async () => {
+        const r = await SpotMe.api.finalizeStripeCheckoutFromUrl();
+        if (cancelled) return;
+        if (!r.skipped && r.ok && r.data?.user) {
+          onUpdateProfile(r.data.user);
+        }
+        if (!r.skipped && r.ok) {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('checkout');
+            url.searchParams.delete('sid');
+            url.searchParams.delete('page');
+            const qs = url.searchParams.toString();
+            history.replaceState({}, '', url.pathname + (qs ? `?${qs}` : '') + url.hash);
+          } catch (_) {}
+        }
+      })();
+      return () => { cancelled = true; };
+    }, [onUpdateProfile]);
+
     /* keyboard: ctrl/cmd opens Dicter -------------------------- */
     useEffect(() => {
       const onKey = (e) => {

@@ -277,6 +277,30 @@
     return request('/api/profile/upgrade', { method: 'POST' });
   }
 
+  /**
+   * After Stripe redirects to /membership?checkout=success&sid=cs_xxx — sync DB + localStorage.
+   */
+  async function finalizeStripeCheckoutFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('checkout') !== 'success') return { ok: true, skipped: true };
+      const sid = params.get('sid');
+      if (!sid) return { ok: true, skipped: true };
+      const r = await request('/api/subscription/verify', {
+        method: 'POST',
+        body: { sessionId: sid },
+      });
+      /* verify may return HTTP 200 with { ok:false } in JSON */
+      if (!r.ok) return { ok: false, skipped: false, error: r.error };
+      const d = r.data || {};
+      const success = !!(d.ok === true && d.user);
+      if (success) setSavedUser(d.user);
+      return { ok: success, skipped: false, data: d };
+    } catch {
+      return { ok: false, skipped: false, error: 'verify_failed' };
+    }
+  }
+
   /* ---------- tracker ---------- */
 
   function logWorkout(data) {
@@ -372,7 +396,7 @@ function deleteWorkoutLog(id) {
     // history
     listSessions, getSession, renameSession, deleteSession,
     // profile
-    updateProfile, requestUpgrade,
+    updateProfile, requestUpgrade, finalizeStripeCheckoutFromUrl,
     // tracker
     logWorkout, getTracker, getTrackerStats, deleteWorkoutLog,
     // programs

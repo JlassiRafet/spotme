@@ -64,6 +64,16 @@
     history.replaceState({}, '', path);
   }
 
+  /** Preserve Stripe return query when routing logged-in users away from /. */
+  function stripeAppLandingQuery() {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('checkout') === 'success' && p.get('sid')) return window.location.search;
+      if (p.get('checkout') === 'canceled') return '?checkout=canceled';
+    } catch {}
+    return '';
+  }
+
   /* ---------- App ---------- */
 
   function App() {
@@ -75,6 +85,7 @@
     useEffect(() => {
       let cancelled = false;
       const intent = classifyPath(window.location.pathname);
+      const landQ = stripeAppLandingQuery();
 
       (async () => {
         const savedToken = SpotMe.api.getToken();
@@ -105,8 +116,7 @@
         if (savedUser && !cancelled) {
           setProfile(savedUser);
           if (intent === 'login' || intent === 'register' || intent === 'marketing') {
-            // Already logged in — redirect to app
-            replace('/dashboard');
+            replace(landQ ? `/membership${landQ}` : '/dashboard');
             setRoute('app');
           } else {
             setRoute('app');
@@ -119,7 +129,7 @@
         if (r.ok) {
           setProfile(r.data.user);
           if (intent === 'login' || intent === 'register' || intent === 'marketing') {
-            replace('/dashboard');
+            replace(landQ ? `/membership${landQ}` : '/dashboard');
           }
           setRoute('app');
         } else {
