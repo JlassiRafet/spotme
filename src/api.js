@@ -173,7 +173,7 @@
   // onSession(id) when the sessionId arrives, onDone() when finished,
   // onError(msg) on failure. Returns an AbortController so the caller
   // can cancel early.
-  function streamChat({ sessionId, message, imageDataUrl, onChunk, onSession, onDone, onError }) {
+  function streamChat({ sessionId, message, imageDataUrl, language, onChunk, onSession, onDone, onError }) {
     const ctrl = new AbortController();
     const token = getToken();
     const headers = { 'Content-Type': 'application/json' };
@@ -182,7 +182,7 @@
     fetch(BASE + '/api/chat/stream', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ sessionId, message, imageDataUrl }),
+      body: JSON.stringify({ sessionId, message, imageDataUrl, language: language || 'en' }),
       signal: ctrl.signal
     }).then(async (res) => {
       if (!res.ok) {
@@ -380,6 +380,8 @@ function deleteWorkoutLog(id) {
     // metrics
     getMetrics, upsertTodayMetric,
     // misc
-    health
+    health,
+    // generic (used by PlansPage and others)
+    request: (path, opts = {}) => request(path, { method: opts.method || 'GET', body: opts.body || null }),
   };
 })();

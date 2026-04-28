@@ -13,6 +13,7 @@
     SpotMeLogo, PlusIcon, MicIcon, SendIcon,
     CameraIcon, ImageIcon
   } = SpotMe.icons;
+  const { useTranslation } = SpotMe;
 
   /* ------------------------------------------------------------
      Pre-made workouts shown in the empty-state carousel.
@@ -83,7 +84,7 @@
      in the empty state). Handles text + send + attach + model
      pill + mic placeholder.
      ------------------------------------------------------------ */
-  function ChatInput({ value, onChange, onSend, attachments, onAttach, onRemoveAttachment, disabled, autoFocus }) {
+  function ChatInput({ value, onChange, onSend, attachments, onAttach, onRemoveAttachment, disabled, autoFocus, t }) {
     const taRef = useRef(null);
     const wrapRef = useRef(null);
     const [listening,    setListening]    = useState(false);
@@ -262,7 +263,7 @@
           <textarea
             ref={taRef}
             className={`chat-input-textarea${listening ? ' is-listening' : ''}`}
-            placeholder={listening ? 'Recording…' : transcribing ? 'Transcribing…' : 'Ask anything…'}
+            placeholder={listening ? t('chat.recording') : transcribing ? t('chat.transcribing') : t('chat.placeholder')}
             value={value}
             onChange={e => { if (!listening && !transcribing) onChange(e.target.value); }}
             onKeyDown={e => {
@@ -303,13 +304,13 @@
             </span>
             <span className="voice-status-text">
               {transcribing
-                ? <span className="voice-idle">Transcribing…</span>
-                : <span className="voice-idle">Recording — tap Stop when done</span>
+                ? <span className="voice-idle">{t('chat.transcribing')}</span>
+                : <span className="voice-idle">{t('chat.voiceStatus')}</span>
               }
             </span>
             {listening && (
               <button type="button" className="voice-stop-btn" onClick={toggleVoice} aria-label="Stop recording">
-                Stop
+                {t('chat.stop')}
               </button>
             )}
           </div>
@@ -322,7 +323,7 @@
      Message — a single user or assistant bubble.
      Handles text chat, image thumbnails, and IdentifyCard results.
      ------------------------------------------------------------ */
-  function Message({ role, content, streaming, imageDataUrl, identification }) {
+  function Message({ role, content, streaming, imageDataUrl, identification, t }) {
     const { useMemo } = React;
 
     const html = useMemo(() => {
@@ -356,9 +357,9 @@
         <div className="msg msg-assistant">
           <div className="msg-avatar"><SpotMeLogo size={26} /></div>
           <div className="msg-body">
-            <div className="msg-role">SpotMe Coach</div>
+            <div className="msg-role">{t ? t('chat.coachName') : 'SpotMe Coach'}</div>
             <div className="msg-content">
-              Analyzing equipment<span className="msg-cursor" />
+              {t ? t('chat.analyzing') : 'Analyzing equipment'}<span className="msg-cursor" />
             </div>
           </div>
         </div>
@@ -369,7 +370,7 @@
       <div className="msg msg-assistant">
         <div className="msg-avatar"><SpotMeLogo size={26} /></div>
         <div className="msg-body">
-          <div className="msg-role">SpotMe Coach</div>
+          <div className="msg-role">{t ? t('chat.coachName') : 'SpotMe Coach'}</div>
           {html ? (
             <div className="msg-content md-content"
                  dangerouslySetInnerHTML={{ __html: html }} />
@@ -388,6 +389,7 @@
      The page itself.
      ------------------------------------------------------------ */
   function ChatPage({ profile, initialSession, onSessionCreated }) {
+    const { t } = useTranslation();
     const [messages, setMessages] = useState([]);
     const [sessionId, setSessionId] = useState(null);
     const [input, setInput] = useState('');
@@ -495,6 +497,7 @@
         sessionId: sessionId || undefined,
         message: text,
         imageDataUrl,
+        language: SpotMe.i18n.currentLang,
         onSession: (id) => {
           setSessionId(id);
           if (onSessionCreated) onSessionCreated();
@@ -550,7 +553,7 @@
             <div className="chat-empty-brand">
               <h1 className="chat-empty-title">SpotMe <span>Coach</span></h1>
             </div>
-            <p style={{ textAlign: 'center', opacity: 0.6 }}>Loading session…</p>
+            <p style={{ textAlign: 'center', opacity: 0.6 }}>{t('chat.loadingSession')}</p>
           </div>
         ) : empty ? (
           <div className="chat-empty">
@@ -567,6 +570,7 @@
                 onRemoveAttachment={removeAttachment}
                 disabled={sending}
                 autoFocus
+                t={t}
               />
             </div>
           </div>
@@ -577,10 +581,19 @@
                 <Message key={i} role={m.role} content={m.content}
                          streaming={!!m.streaming}
                          imageDataUrl={m.imageDataUrl}
-                         identification={m.identification} />
+                         identification={m.identification}
+                         t={t} />
               ))}
               {error && (
-                <div className="chat-error">{error}</div>
+                <div className={`chat-error${error.includes('free AI messages') ? ' chat-error--limit' : ''}`}>
+                  {error}
+                  {error.includes('free AI messages') && (
+                    <button type="button" className="chat-upgrade-btn"
+                            onClick={() => window.dispatchEvent(new CustomEvent('spotme:navigate', { detail: 'plans' }))}>
+                      Upgrade to Pro →
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <div className="chat-footer">
@@ -592,6 +605,7 @@
                 onAttach={addAttachment}
                 onRemoveAttachment={removeAttachment}
                 disabled={sending}
+                t={t}
               />
             </div>
           </>

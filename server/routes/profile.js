@@ -10,13 +10,15 @@
  *    with current-password confirmation — out of scope for v1.)
  *   Returns: { user }
  *
- * POST  /api/profile/upgrade  toggle plan to 'pro' (demo — no payment)
- *   Returns: { user }
+ * POST  /api/profile/upgrade  same as POST /api/subscription/checkout
+ *   Returns: { url } redirect to Stripe Checkout when keys are configured;
+ *   503 if payment is not configured.
  * ------------------------------------------------------------ */
 
 import express from 'express';
 import { stmts } from '../db.js';
 import { ApiError, requireAuth, handler, publicUser } from './_shared.js';
+import { createStripeCheckoutSession } from './subscription.js';
 
 export const profileRoutes = express.Router();
 
@@ -99,15 +101,10 @@ profileRoutes.patch('/', requireAuth, handler((req, res) => {
 }));
 
 /* ---------- POST /api/profile/upgrade ----------
- *
- * Demo-only: flips plan to 'pro'. In production this would be the
- * callback from a Stripe checkout session. For local dev we just
- * flip the flag so the user can see the Pro UI paths.
+ * Delegates to Stripe Checkout (same session as /api/subscription/checkout).
  * --------------------------------------------------------------- */
 
-profileRoutes.post('/upgrade', requireAuth, handler((req, res) => {
-  // Out of scope for v1 — surface a clear "under development" error
-  // so the frontend can show the placeholder modal instead of
-  // pretending to succeed.
-  throw new ApiError(501, 'Upgrade flow is under development. Payment integration is not connected yet.');
+profileRoutes.post('/upgrade', requireAuth, handler(async (req, res) => {
+  const { url } = await createStripeCheckoutSession(req);
+  res.json({ url });
 }));

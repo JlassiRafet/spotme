@@ -14,10 +14,15 @@ import { ApiError, requireAuth, handler } from './_shared.js';
 
 export const sessionRoutes = express.Router();
 
+const FREE_SESSION_LIMIT = 5;
+
 /* ---------- GET /api/sessions ---------- */
 
 sessionRoutes.get('/', requireAuth, handler((req, res) => {
-  const rows = stmts.listSessions.all(req.user.id);
+  const isPro = req.user.plan === 'pro';
+  const rows  = isPro
+    ? stmts.listSessions.all(req.user.id)
+    : stmts.listSessionsLimited.all(req.user.id, FREE_SESSION_LIMIT);
   // Frontend wants camelCase
   res.json({
     sessions: rows.map(r => ({
@@ -27,7 +32,10 @@ sessionRoutes.get('/', requireAuth, handler((req, res) => {
       preview:   r.preview ? r.preview.slice(0, 120) : null,
       createdAt: r.created_at * 1000,
       updatedAt: r.updated_at * 1000
-    }))
+    })),
+    plan:            req.user.plan || 'free',
+    historyLimited:  !isPro,
+    historyLimit:    FREE_SESSION_LIMIT,
   });
 }));
 

@@ -23,12 +23,25 @@
     };
   </script>
 
+  <!-- Apply saved theme before React loads to avoid flash -->
+  <script>
+    (function() {
+      var pref = localStorage.getItem('spotme-theme') || 'system';
+      var dark = pref === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : pref === 'dark';
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
+
   <link rel="stylesheet" href="styles.css" />
 
   <!-- React + Babel (standalone, in-browser transpile) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- i18n -->
+  <script src="https://unpkg.com/i18next@23/i18next.min.js"></script>
   <!-- Markdown renderer for AI responses -->
   <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
   <!-- Motion — stats count-up / spring-style transitions (globals: Motion) -->
@@ -54,6 +67,7 @@
     window.SpotMe first; App.jsx (the root) reads from window.SpotMe last.
   -->
   <script type="text/babel" data-presets="react" src="src/icons.jsx"></script>
+  <script type="text/babel" data-presets="react" src="src/i18n.js"></script>
   <script type="text/babel" data-presets="react" src="src/api.js"></script>
   <script type="text/babel" data-presets="react" src="src/primitives.jsx"></script>
   <script type="text/babel" data-presets="react" src="src/UnderDev.jsx"></script>

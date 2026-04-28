@@ -81,6 +81,7 @@
 
   function HistoryPage({ onOpenChat }) {
     const [sessions, setSessions]       = useState([]);
+    const [historyMeta, setHistoryMeta] = useState({ historyLimited: false, historyLimit: 5 });
     const [loading, setLoading]         = useState(true);
     const [fetchError, setFetchError]   = useState(null);
     const [search, setSearch]           = useState('');
@@ -97,8 +98,15 @@
       setFetchError(null);
       SpotMe.api.listSessions()
         .then(res => {
-          if (res.ok) setSessions(res.data.sessions || []);
-          else setFetchError('Could not load sessions.');
+          if (res.ok) {
+            setSessions(res.data.sessions || []);
+            setHistoryMeta({
+              historyLimited: res.data.historyLimited || false,
+              historyLimit:   res.data.historyLimit   || 5,
+            });
+          } else {
+            setFetchError('Could not load sessions.');
+          }
         })
         .catch(() => setFetchError('Could not reach the server.'))
         .finally(() => setLoading(false));
@@ -187,6 +195,20 @@
 
     return (
       <div className="history-page">
+        {/* Free plan history limit banner */}
+        {historyMeta.historyLimited && (
+          <div className="history-plan-banner">
+            <span>🔒 Showing your {historyMeta.historyLimit} most recent sessions.</span>
+            <button type="button" className="history-plan-upgrade"
+                    onClick={() => {
+                      /* Dispatch to AppShell to navigate to plans page */
+                      window.dispatchEvent(new CustomEvent('spotme:navigate', { detail: 'plans' }));
+                    }}>
+              Upgrade to Pro for full history →
+            </button>
+          </div>
+        )}
+
         {/* Header row */}
         <div className="history-header">
           <h2 className="history-title">History</h2>

@@ -29,6 +29,15 @@
   const { useState, useEffect, useCallback } = React;
   const SpotMe = window.SpotMe;
 
+  /* Apply stored theme before first render to prevent flash */
+  (function bootTheme() {
+    const pref = localStorage.getItem('spotme-theme') || 'system';
+    const dark = pref === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : pref === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  })();
+
   /* ---------- helpers ---------- */
 
   /** Classify the current pathname into a top-level intent. */
@@ -39,7 +48,7 @@
     if (p === '/register' || p === '/signup') return 'register';
     // Any app-shell path:
     const APP_PREFIXES = [
-      '/dashboard', '/activities', '/programs', '/program',
+      '/dashboard', '/activities', '/programs', '/program', '/diet',
       '/membership', '/profile', '/history'
     ];
     if (APP_PREFIXES.some(prefix => p === prefix || p.startsWith(prefix + '/'))) return 'app';

@@ -5,5 +5,8 @@
     "start": "cd server && npm start",
     "dev": "cd server && npm run dev",
     "install-server": "cd server && npm install"
+  },
+  "dependencies": {
+    "stripe": "^22.1.0"
   }
 }

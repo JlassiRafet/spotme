@@ -15,13 +15,14 @@ import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
 import { db } from './db.js';
-import { authRoutes }     from './routes/auth.js';
-import { chatRoutes }     from './routes/chat.js';
-import { identifyRoutes } from './routes/identify.js';
-import { sessionRoutes }  from './routes/sessions.js';
-import { profileRoutes }    from './routes/profile.js';
-import { transcribeRoutes } from './routes/transcribe.js';
-import { trackerRoutes }    from './routes/tracker.js';
+import { authRoutes }         from './routes/auth.js';
+import { chatRoutes }         from './routes/chat.js';
+import { identifyRoutes }     from './routes/identify.js';
+import { sessionRoutes }      from './routes/sessions.js';
+import { profileRoutes }      from './routes/profile.js';
+import { transcribeRoutes }   from './routes/transcribe.js';
+import { trackerRoutes }      from './routes/tracker.js';
+import { subscriptionRoutes, webhookRoutes } from './routes/subscription.js';
 import { programsRoutes }   from './routes/programs.js';
 import { metricsRoutes }    from './routes/metrics.js';
 
@@ -47,6 +48,10 @@ app.use((_, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
+
+// Raw body BEFORE express.json() so Stripe signature verification works
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 
@@ -80,13 +85,15 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.use('/api/auth',       authRoutes);
-app.use('/api/chat',       chatRoutes);
-app.use('/api/identify',   identifyRoutes);
-app.use('/api/sessions',   sessionRoutes);
-app.use('/api/profile',    profileRoutes);
-app.use('/api/transcribe', transcribeRoutes);
-app.use('/api/tracker',    trackerRoutes);
+app.use('/api/auth',         authRoutes);
+app.use('/api/chat',         chatRoutes);
+app.use('/api/identify',     identifyRoutes);
+app.use('/api/sessions',     sessionRoutes);
+app.use('/api/profile',      profileRoutes);
+app.use('/api/transcribe',   transcribeRoutes);
+app.use('/api/tracker',      trackerRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/webhook',      webhookRoutes);
 app.use('/api/programs',   programsRoutes);
 app.use('/api/metrics',    metricsRoutes);
 
@@ -117,10 +124,11 @@ app.get('*', (req, res, next) => {
 /* ---------- error handler ---------- */
 app.use((err, _req, res, _next) => {
   console.error('[spotme] Unhandled error:', err);
-  const status = err.status || 500;
-  res.status(status).json({
-    error: status < 500 ? (err.message || 'Request failed') : 'Internal server error'
-  });
+  const status  = err.status || 500;
+  // Always expose the message for intentional ApiErrors; hide internals for unexpected 500s.
+  const isApiError = err?.constructor?.name === 'ApiError' || typeof err.status === 'number';
+  const message = isApiError ? (err.message || 'Request failed') : 'Internal server error';
+  res.status(status).json({ error: message });
 });
 
 /* ---------- start ---------- */

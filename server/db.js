@@ -156,6 +156,12 @@ sqlDb.exec(`
 `);
 
 /* ---------- migrations ---------- */
+[
+  'ALTER TABLE users ADD COLUMN stripe_customer_id TEXT',
+  'ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT',
+  'ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT \'free\'',
+  'ALTER TABLE users ADD COLUMN subscription_end INTEGER',
+].forEach(sql => { try { sqlDb.exec(sql); } catch {} });
 try { sqlDb.exec(`ALTER TABLE program_sessions ADD COLUMN tips TEXT`); } catch {}
 
 /* ---------- persistence ---------- */
@@ -317,6 +323,8 @@ export const stmts = {
   getWorkoutById:     prep('SELECT * FROM workout_logs WHERE id = ? AND user_id = ?'),
   deleteWorkout:      prep('DELETE FROM workout_logs WHERE id = ? AND user_id = ?'),
 
+  deleteWorkout:      prep('DELETE FROM workout_logs WHERE id = ? AND user_id = ?'),
+
   /* ---- programs catalogue ---- */
   listPrograms:       prep('SELECT * FROM programs ORDER BY category, name'),
   listProgramsByCat:  prep('SELECT * FROM programs WHERE category = ? ORDER BY name'),
@@ -375,6 +383,39 @@ export const stmts = {
     SELECT * FROM daily_metrics
     WHERE user_id = ? AND day >= ?
     ORDER BY day DESC
+  `),
+
+  /* ---- subscription / pro plan ---- */
+  updateSubscription: prep(`
+    UPDATE users SET
+      plan                   = @plan,
+      stripe_customer_id     = @stripe_customer_id,
+      stripe_subscription_id = @stripe_subscription_id,
+      subscription_status    = @subscription_status,
+      subscription_end       = @subscription_end,
+      updated_at             = unixepoch()
+    WHERE id = @id
+  `),
+  getUserByStripeCustomer: prep('SELECT * FROM users WHERE stripe_customer_id = ?'),
+  getUserByStripeSubscription: prep('SELECT * FROM users WHERE stripe_subscription_id = ?'),
+
+  /* daily message count for free-tier limiting */
+  countUserMessagesToday: prep(`
+    SELECT COUNT(*) as cnt
+    FROM messages m
+    JOIN chat_sessions cs ON cs.id = m.session_id
+    WHERE cs.user_id = ? AND m.role = 'user' AND m.created_at >= ?
+  `),
+
+  /* limited session listing for free users */
+  listSessionsLimited: prep(`
+    SELECT cs.id, cs.title, cs.tags, cs.created_at, cs.updated_at,
+           (SELECT content FROM messages WHERE session_id = cs.id AND role = 'user'
+            ORDER BY id ASC LIMIT 1) as preview
+    FROM chat_sessions cs
+    WHERE cs.user_id = ?
+    ORDER BY cs.updated_at DESC
+    LIMIT ?
   `),
 
   deleteUser:         prep('DELETE FROM users WHERE id = ?')
