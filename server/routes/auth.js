@@ -16,6 +16,7 @@
 
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { stmts } from '../db.js';
 import { ApiError, newToken, requireAuth, handler, publicUser } from './_shared.js';
 
@@ -170,7 +171,7 @@ authRoutes.get('/google', (req, res) => {
     return res.status(503).send('Google Sign-In is not configured on this server.');
   }
   const base = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 8787}`;
-  const state = require('crypto').randomBytes(16).toString('hex');
+  const state = crypto.randomBytes(16).toString('hex');
   oauthStates.set(state, Date.now() + 10 * 60 * 1000);
   const params = new URLSearchParams({
     client_id:     clientId,
