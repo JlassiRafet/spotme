@@ -163,6 +163,11 @@ sqlDb.exec(`
   'ALTER TABLE users ADD COLUMN subscription_end INTEGER',
 ].forEach(sql => { try { sqlDb.exec(sql); } catch {} });
 try { sqlDb.exec(`ALTER TABLE program_sessions ADD COLUMN tips TEXT`); } catch {}
+/* colour migrations — idempotent */
+sqlDb.exec(`UPDATE programs SET cover_color = 'purple' WHERE name = 'Upper'`);
+sqlDb.exec(`UPDATE programs SET cover_color = 'pink'   WHERE name = 'Lower'`);
+sqlDb.exec(`UPDATE programs SET cover_color = 'purple' WHERE name = 'Macro Plan'`);
+sqlDb.exec(`UPDATE programs SET cover_color = 'pink'   WHERE name = 'Mediterranean Diet'`);
 
 /* ---------- persistence ---------- */
 
