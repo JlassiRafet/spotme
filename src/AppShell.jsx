@@ -10,6 +10,7 @@
     SpotMeLogo, PlusIcon, HistoryIcon, TrackerIcon, BellIcon,
     LogoutIcon, CrownIcon
   } = SpotMe.icons;
+  const { useTranslation } = SpotMe;
 
   function PlansIcon() {
     return (
@@ -77,6 +78,7 @@
 
   /* Perplexity-style profile popup menu */
   function ProfileMenu({ profile, onNavigate, onLogout, onClose }) {
+    const { t } = useTranslation();
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -111,24 +113,24 @@
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
-          <span>Account</span>
+          <span>{t('nav.account')}</span>
         </button>
         {profile.subscription !== 'pro' && (
           <button type="button" role="menuitem" className="profile-menu-item"
                   onClick={() => { onNavigate('tracker'); onClose(); }}>
             <CrownIcon />
-            <span>Upgrade plan</span>
+            <span>{t('nav.upgradePlan')}</span>
           </button>
         )}
-        <button type="button" role="menuitem" className="profile-menu-item is-disabled" disabled>
+        <button type="button" role="menuitem" className="profile-menu-item"
+                onClick={() => { onNavigate('profile'); onClose(); }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
                strokeLinecap="round" strokeLinejoin="round" width="16" height="16" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
             <line x1="2" y1="12" x2="22" y2="12"/>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          <span>Language</span>
-          <span className="profile-menu-badge">Soon</span>
+          <span>{t('nav.language')}</span>
         </button>
         <button type="button" role="menuitem" className="profile-menu-item is-disabled" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
@@ -137,14 +139,14 @@
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          <span>Help</span>
-          <span className="profile-menu-badge">Soon</span>
+          <span>{t('nav.help')}</span>
+          <span className="profile-menu-badge">{t('common.soon')}</span>
         </button>
         <div className="profile-menu-divider" />
         <button type="button" role="menuitem" className="profile-menu-item profile-menu-signout"
                 onClick={() => { onLogout(); onClose(); }}>
           <LogoutIcon />
-          <span>Sign out</span>
+          <span>{t('nav.signOut')}</span>
         </button>
       </div>
     );
@@ -153,6 +155,7 @@
   /* Mobile slide-in drawer */
   function MobileDrawer({ profile, page, onNavigate, onLogout, onNewChat, onClose,
                            sessions, historyExpanded, setHistoryExpanded, loadSessions }) {
+    const { t } = useTranslation();
     const drawerRef = useRef(null);
     const displayName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
 
@@ -194,31 +197,31 @@
           <nav className="mobile-drawer-nav">
             <button type="button" className="mobile-drawer-item" onClick={() => { onNewChat(); onClose(); }}>
               <PlusIcon />
-              <span>New chat</span>
+              <span>{t('nav.newChat')}</span>
             </button>
             <button type="button"
                     className={`mobile-drawer-item${page === 'history' ? ' is-active' : ''}`}
                     onClick={() => { loadSessions(); nav('history'); }}>
               <HistoryIcon />
-              <span>History</span>
+              <span>{t('nav.history')}</span>
             </button>
             <button type="button"
                     className={`mobile-drawer-item${page === 'tracker' ? ' is-active' : ''}`}
                     onClick={() => nav('tracker')}>
               <TrackerIcon />
-              <span>Tracker</span>
+              <span>{t('nav.tracker')}</span>
             </button>
             <button type="button"
                     className={`mobile-drawer-item${page === 'plans' ? ' is-active' : ''}`}
                     onClick={() => nav('plans')}>
               <PlansIcon />
-              <span>Plans</span>
+              <span>{t('nav.plans')}</span>
             </button>
             <button type="button"
                     className={`mobile-drawer-item${page === 'about' ? ' is-active' : ''}`}
                     onClick={() => nav('about')}>
               <AboutIcon />
-              <span>About</span>
+              <span>{t('nav.about')}</span>
             </button>
           </nav>
 
@@ -226,7 +229,7 @@
           {sessions.length > 0 && (
             <>
               <div className="mobile-drawer-divider" />
-              <div className="mobile-drawer-section-label">Recent</div>
+              <div className="mobile-drawer-section-label">{t('nav.recent')}</div>
               <div className="mobile-drawer-sessions">
                 {sessions.slice(0, 8).map(s => (
                   <button key={s.id} type="button" className="mobile-drawer-session"
@@ -251,12 +254,12 @@
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
               </svg>
-              <span>Account</span>
+              <span>{t('nav.account')}</span>
             </button>
             <button type="button" className="mobile-drawer-item mobile-drawer-signout"
                     onClick={() => { onLogout(); onClose(); }}>
               <LogoutIcon />
-              <span>Sign out</span>
+              <span>{t('nav.signOut')}</span>
             </button>
           </div>
         </div>
@@ -265,6 +268,7 @@
   }
 
   function AppShell({ profile, onUpdateProfile, onLogout }) {
+    const { t } = useTranslation();
     const [page, setPage] = useState('chat');
     const [chatSessionId, setChatSessionId] = useState(0);
     const [bellEnabled, setBellEnabled] = useState(true);
@@ -298,12 +302,12 @@
     }, []);
 
     const pageTitle =
-      page === 'chat'    ? 'New conversation' :
-      page === 'profile' ? 'Account' :
-      page === 'tracker' ? 'Tracker' :
-      page === 'history' ? 'History' :
-      page === 'plans'   ? 'Plans' :
-      page === 'about'   ? 'About' :
+      page === 'chat'    ? t('page.newConversation') :
+      page === 'profile' ? t('page.account') :
+      page === 'tracker' ? t('page.tracker') :
+      page === 'history' ? t('page.history') :
+      page === 'plans'   ? t('page.plans') :
+      page === 'about'   ? t('page.about') :
                            'SpotMe';
 
     return (
@@ -342,28 +346,28 @@
           </div>
 
           <nav className="app-sidebar-nav">
-            <SidebarItem icon={<PlusIcon />} label="New chat"
+            <SidebarItem icon={<PlusIcon />} label={t('nav.newChat')}
                          active={false} onClick={startNewChat} />
 
-            <SidebarItem icon={<TrackerIcon />} label="Tracker"
+            <SidebarItem icon={<TrackerIcon />} label={t('nav.tracker')}
                          active={page === 'tracker'}
                          onClick={() => setPage('tracker')} />
 
-            <SidebarItem icon={<PlansIcon />} label="Plans"
+            <SidebarItem icon={<PlansIcon />} label={t('nav.plans')}
                          active={page === 'plans'}
                          onClick={() => setPage('plans')} />
 
-            <SidebarItem icon={<AboutIcon />} label="About"
+            <SidebarItem icon={<AboutIcon />} label={t('nav.about')}
                          active={page === 'about'}
                          onClick={() => setPage('about')} />
 
             <div className="sidebar-history-group">
               <div className="sidebar-history-header">
-                <button type="button"
-                        className={`sidebar-history-btn${page === 'history' ? ' is-active' : ''}`}
-                        onClick={() => { loadSidebarSessions(); setPage('history'); }}>
+                  <button type="button"
+                          className={`sidebar-history-btn${page === 'history' ? ' is-active' : ''}`}
+                          onClick={() => { loadSidebarSessions(); setPage('history'); }}>
                   <span className="sidebar-icon"><HistoryIcon /></span>
-                  <span className="sidebar-label">History</span>
+                  <span className="sidebar-label">{t('nav.history')}</span>
                 </button>
                 {sidebarSessions.length > 0 && (
                   <button type="button"

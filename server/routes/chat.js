@@ -29,11 +29,20 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const CHAT_MODEL   = process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile';
 const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
 
+/* ---------- language name map ---------- */
+
+const LANG_NAMES = {
+  en: 'English', fr: 'French', es: 'Spanish', ar: 'Arabic',
+  de: 'German', pt: 'Portuguese', it: 'Italian',
+  zh: 'Chinese (Simplified)', ja: 'Japanese', ko: 'Korean',
+};
+
 /* ---------- system prompt ---------- */
 
-function buildSystemPrompt(user) {
+function buildSystemPrompt(user, language = 'en') {
+  const langName = LANG_NAMES[language] || 'English';
   const bits = [
-    "You are SpotMe Coach — a concise, encouraging AI personal trainer inside the SpotMe app.",
+    `You are SpotMe Coach — a concise, encouraging AI personal trainer inside the SpotMe app. Always respond in ${langName}.`,
     "Format replies with short paragraphs. Use bullet or numbered lists for workouts (exercise · sets x reps · rest).",
     "Always tailor recommendations to the user's profile below. If the user asks about something unrelated to fitness, answer briefly and steer back to training.",
     "",
@@ -53,6 +62,7 @@ function buildSystemPrompt(user) {
 chatRoutes.post('/', requireAuth, handler(async (req, res) => {
   const message = (req.body.message || '').trim();
   const imageDataUrl = req.body.imageDataUrl || null;
+  const language = req.body.language || 'en';
 
   if (!message && !imageDataUrl) throw new ApiError(400, 'Message or image is required.');
   if (message.length > 4000)      throw new ApiError(400, 'Message is too long (max 4000 chars).');
@@ -79,7 +89,7 @@ chatRoutes.post('/', requireAuth, handler(async (req, res) => {
 
   /* ---- build the OpenAI-style messages array from history ---- */
   const history = stmts.listMessages.all(sessionId);
-  const systemPrompt = buildSystemPrompt(req.user);
+  const systemPrompt = buildSystemPrompt(req.user, language);
 
   // Detect whether any message in this conversation has an image.
   // Llama vision models have stricter constraints (no system message with
@@ -153,6 +163,7 @@ chatRoutes.post('/', requireAuth, handler(async (req, res) => {
 chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
   const message = (req.body.message || '').trim();
   const imageDataUrl = req.body.imageDataUrl || null;
+  const language = req.body.language || 'en';
 
   if (!message && !imageDataUrl) throw new ApiError(400, 'Message or image is required.');
   if (message.length > 4000)      throw new ApiError(400, 'Message is too long (max 4000 chars).');
@@ -179,7 +190,7 @@ chatRoutes.post('/stream', requireAuth, handler(async (req, res) => {
 
   /* ---- build messages array ---- */
   const history = stmts.listMessages.all(sessionId);
-  const systemPrompt = buildSystemPrompt(req.user);
+  const systemPrompt = buildSystemPrompt(req.user, language);
   const hasAnyImage = history.some(m => m.image_data_url);
   const model = hasAnyImage ? VISION_MODEL : CHAT_MODEL;
 

@@ -15,6 +15,15 @@
   const { useState, useEffect, useCallback } = React;
   const SpotMe = window.SpotMe;
 
+  /* Apply stored theme before first render to prevent flash */
+  (function bootTheme() {
+    const pref = localStorage.getItem('spotme-theme') || 'system';
+    const dark = pref === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : pref === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  })();
+
   function App() {
     const [route, setRoute] = useState('booting');
     const [authEntry, setAuthEntry] = useState('login');
