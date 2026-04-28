@@ -1088,6 +1088,12 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   color: #ff8c30;
   line-height: 1;
   margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.marketing-stat-value--infinity {
+  opacity: 0;
+  transform: scale(0.88);
+  transform-origin: center 0.45em;
 }
 .marketing-stat-label { font-size: 0.78rem; color: #a07038; font-weight: 500; }
 
