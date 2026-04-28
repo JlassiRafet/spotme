@@ -45,6 +45,9 @@
       case 'book-coach':  return '/book-coach';
       case 'profile':     return '/profile';
       case 'history':     return '/history';
+      case 'help-center': return '/help-center';
+      case 'terms':       return '/terms';
+      case 'privacy':     return '/privacy';
       // Transient — stay at current URL
       default:            return window.location.pathname;
     }
@@ -65,6 +68,9 @@
       case 'book-coach': return { name: 'book-coach' };
       case 'profile':    return { name: 'profile' };
       case 'history':    return { name: 'history' };
+      case 'help-center':return { name: 'help-center' };
+      case 'terms':      return { name: 'terms' };
+      case 'privacy':    return { name: 'privacy' };
       default:           return { name: 'home' };
     }
   }
@@ -381,7 +387,7 @@
     }, [dicterOpen]);
 
     /* derive top bar visibility ------------------------------- */
-    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership', 'home'];
+    const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership', 'home', 'help-center', 'terms', 'privacy'];
     const showTopbar = !HIDE_TOPBAR.includes(route.name);
     const isFullScreenMode = route.name === 'runner' || route.name === 'dietRunner';
 
@@ -414,18 +420,6 @@
               </button>
               <h1 className="fit-topbar-title">SpotMe</h1>
               <div className="fit-topbar-actions">
-                <button
-                  type="button"
-                  className={`fit-icon-btn${bellPulse ? '' : ''}`}
-                  onClick={() => setBellPulse(false)}
-                  aria-label="Notifications"
-                  style={{ position: 'relative' }}
-                >
-                  <span style={{ width: 18, height: 18, display: 'inline-flex' }}>
-                    <BellIcon active />
-                  </span>
-                  {bellPulse && <span className="dot" />}
-                </button>
               </div>
             </header>
           )}
@@ -512,10 +506,23 @@
             />
           )}
 
+          {route.name === 'help-center' && SpotMe.HelpCenterPage && (
+            <SpotMe.HelpCenterPage onBack={back} />
+          )}
+
+          {route.name === 'terms' && SpotMe.TermsPage && (
+            <SpotMe.TermsPage onBack={back} />
+          )}
+
+          {route.name === 'privacy' && SpotMe.PrivacyPage && (
+            <SpotMe.PrivacyPage onBack={back} />
+          )}
+
           {route.name === 'profile' && SpotMe.ProfilePage && (
             <div className="fit-page" style={{ paddingTop: 12 }}>
               <SpotMe.ProfilePage
                 profile={profile}
+                onNavigate={navigate}
                 onUpdateProfile={onUpdateProfile}
                 onLogout={onLogout}
                 onDeleteAccount={async () => {
