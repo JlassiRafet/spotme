@@ -6,9 +6,17 @@
     "test": "vitest run --config vitest.config.js",
     "test:watch": "vitest watch --config vitest.config.js",
     "test:coverage": "vitest run --coverage --config vitest.config.js",
-    "test:k6:smoke": "k6 run k6/smoke.js",
-    "test:k6:load": "k6 run k6/load.js",
-    "test:k6:stress": "k6 run k6/stress.js"
+    "test:k6:smoke":     "k6 run k6/smoke.js",
+    "test:k6:load":      "k6 run k6/load.js",
+    "test:k6:stress":    "k6 run k6/stress.js",
+    "test:k6:spike":     "k6 run k6/spike.js",
+    "test:k6:volume":    "k6 run k6/volume.js",
+    "test:k6:endurance": "k6 run --env DURATION=30m k6/endurance.js",
+    "test:k6:all":       "k6 run k6/smoke.js && k6 run k6/load.js && k6 run k6/spike.js && k6 run k6/volume.js",
+    "test:e2e":          "cd selenium && npm test",
+    "test:e2e:auth":     "cd selenium && npm run test:auth",
+    "test:e2e:chat":     "cd selenium && npm run test:chat",
+    "test:e2e:settings": "cd selenium && npm run test:settings"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.0.0",

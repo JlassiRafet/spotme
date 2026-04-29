@@ -239,7 +239,6 @@ webhookRoutes.post('/stripe', handler(async (req, res) => {
     return res.status(400).json({ error: 'Webhook signature verification failed.' });
   }
 
-  console.log(`[stripe] Event: ${event.type}`);
 
   switch (event.type) {
     case 'checkout.session.completed': {

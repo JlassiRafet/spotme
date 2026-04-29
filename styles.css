@@ -13,7 +13,7 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1);
   --shadow-lg: 0 12px 24px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.15);
   --shadow-premium: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(0, 229, 160, 0.05);
-  --transition-smooth: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-smooth: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html, body {
@@ -172,11 +172,18 @@ html, body {
 
 .liquid:hover {
   transform: translateY(-2px);
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .liquid:active {
   transform: scale(0.97);
+}
+
+/* Cards that hold forms must not lift on hover */
+.auth-card.liquid:hover {
+  transform: none;
+  filter: none;
+  cursor: default;
 }
 
 /* Hover shine effect */
@@ -302,18 +309,18 @@ html, body {
   will-change: opacity, transform;
 }
 .auth-view.is-entering {
-  animation: viewIn 340ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: viewIn 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .auth-view.is-exiting {
-  animation: viewOut 200ms cubic-bezier(0.55, 0, 0.2, 1) both;
+  animation: viewOut 280ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 @keyframes viewIn {
-  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
-  to   { opacity: 1; transform: translateY(0);     filter: blur(0);   }
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
 }
 @keyframes viewOut {
-  from { opacity: 1; transform: translateY(0);     filter: blur(0);   }
-  to   { opacity: 0; transform: translateY(-8px);  filter: blur(3px); }
+  from { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  to   { opacity: 0; transform: translateY(-10px); filter: blur(4px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .auth-view.is-entering, .auth-view.is-exiting { animation: none; }
@@ -390,13 +397,10 @@ html, body {
   font-size: 0.92rem;
   font-family: inherit;
   cursor: pointer;
-  /* overflow removed — we need the hover glow (box-shadow on .btn-glow)
-     to be visible OUTSIDE the button's rounded rectangle. The ::before
-     sheen is already bounded by border-radius inheritance, so nothing
-     actually leaks inside. */
-  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1),
-              color 320ms ease,
-              border-color 320ms ease;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+              color 360ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 360ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 360ms cubic-bezier(0.22, 1, 0.36, 1);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
 }
@@ -419,7 +423,7 @@ html, body {
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 420ms ease;
+  transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .btn-base:hover .btn-glow { opacity: 1; }
 
@@ -456,13 +460,13 @@ html, body {
   -webkit-mask-composite: xor;
           mask-composite: exclude;
 }
-/* Primary hover glow */
+/* Primary hover glow — softened */
 .btn-primary .btn-glow {
   box-shadow:
-    0 0 0 1px rgba(0, 229, 160, 0.55),
-    0 0 22px rgba(0, 229, 160, 0.65),
-    0 14px 38px rgba(0, 200, 130, 0.55),
-    0 22px 60px rgba(0, 160, 90, 0.35);
+    0 0 0 1px rgba(0, 229, 160, 0.32),
+    0 0 16px rgba(0, 229, 160, 0.38),
+    0 10px 28px rgba(0, 200, 130, 0.28),
+    0 18px 46px rgba(0, 160, 90, 0.18);
 }
 .btn-primary:hover {
   color: #000f06;
@@ -516,10 +520,10 @@ html, body {
 }
 .btn-google .btn-glow {
   box-shadow:
-    0 0 0 1px rgba(0, 229, 160, 0.30),
-    0 0 18px rgba(0, 200, 130, 0.38),
-    0 12px 30px rgba(0, 160, 90, 0.35),
-    0 20px 52px rgba(0, 130, 70, 0.22);
+    0 0 0 1px rgba(0, 229, 160, 0.18),
+    0 0 14px rgba(0, 200, 130, 0.22),
+    0 8px 22px rgba(0, 160, 90, 0.18),
+    0 16px 40px rgba(0, 130, 70, 0.12);
 }
 .btn-google:hover { color: #e8fff4; }
 .btn-google:active { transform: translateY(1px) scale(0.995); }
@@ -8135,6 +8139,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 
 [data-theme="light"] .app-shell {
   background: linear-gradient(180deg, #eef4ff 0%, #f4f8ff 52%, #f8fbff 100%);
+  color: var(--ink-1);
 }
 
 [data-theme="light"] .app-sidebar {
@@ -8504,7 +8509,10 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   border-color: rgba(0,0,0,0.07);
 }
 [data-theme="light"] .auth-card::before { opacity: 0.3; }
-[data-theme="light"] .auth-title { color: var(--ink-1); }
+[data-theme="light"] .auth-title {
+  color: var(--ink-1);
+  text-shadow: none;
+}
 [data-theme="light"] .auth-desc { color: var(--ink-3); }
 [data-theme="light"] .auth-error-banner { background: rgba(220,60,60,0.07); border-color: rgba(220,60,60,0.22); color: #c04040; }
 [data-theme="light"] .field-error { color: #c04040; }

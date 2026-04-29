@@ -1,0 +1,22 @@
+{
+  "name": "spotme-selenium-tests",
+  "version": "1.0.0",
+  "description": "Selenium WebDriver E2E tests for SpotMe",
+  "type": "module",
+  "scripts": {
+    "test":          "mocha --timeout 30000 tests/**/*.test.js",
+    "test:auth":     "mocha --timeout 30000 tests/auth.test.js",
+    "test:chat":     "mocha --timeout 30000 tests/chat.test.js",
+    "test:settings": "mocha --timeout 30000 tests/settings.test.js",
+    "test:all":      "mocha --timeout 60000 tests/**/*.test.js --reporter spec"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.18.1",
+    "chromedriver":       "^123.0.0",
+    "mocha":              "^10.4.0",
+    "chai":               "^5.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
