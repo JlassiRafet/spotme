@@ -190,14 +190,6 @@ npm run test:k6:stress   # 0→200 VU spike
 - [x] Stripe webhook endpoint (payment flow stub)
 - [x] 74 automated tests passing (unit + integration)
 
-## What's not done yet
-
-- [ ] Payment / upgrade flow (Stripe wired but UI flow incomplete)
-- [ ] ProfilePage save changes via PATCH /api/profile
-- [ ] Avatar upload
-- [ ] Voice input (Groq Whisper)
-- [ ] Selenium / browser E2E tests
-
 ---
 
 ## Key design decisions
