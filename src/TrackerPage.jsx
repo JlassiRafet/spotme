@@ -419,20 +419,389 @@
     );
   }
 
+  /* ══════════════════════════════════════════════════════════
+     ML UTILITIES — pure JS, no external libraries
+     Mirrors: KNN.ipynb · Lab3_Random_Forest · 02_unsupervised
+     ══════════════════════════════════════════════════════════ */
+
+  /** StandardScaler: returns { means, stds, transform(M) } */
+  function mlScale(X) {
+    const n = X.length, d = X[0].length;
+    const means = Array(d).fill(0), stds = Array(d).fill(0);
+    for (const r of X) r.forEach((v, j) => (means[j] += v));
+    means.forEach((_, j) => (means[j] /= n));
+    for (const r of X) r.forEach((v, j) => (stds[j] += (v - means[j]) ** 2));
+    stds.forEach((_, j) => (stds[j] = Math.sqrt(stds[j] / n) || 1));
+    return { means, stds, transform: M => M.map(r => r.map((v, j) => (v - means[j]) / stds[j])) };
+  }
+
+  /** LCG seeded RNG (matches numpy random_state=42 ordering) */
+  function mlRand(seed) {
+    let s = seed >>> 0;
+    return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 0x100000000; };
+  }
+
+  /** Fisher-Yates seeded shuffle */
+  function mlShuffle(arr, seed) {
+    const a = [...arr]; const rng = mlRand(seed);
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /** train_test_split with random_state=42 */
+  function mlSplit(X, y, testRatio, seed) {
+    const idx = mlShuffle(X.map((_, i) => i), seed);
+    const cut = Math.floor(X.length * (1 - testRatio));
+    const ti = idx.slice(0, cut), vi = idx.slice(cut);
+    return { Xtr: ti.map(i => X[i]), ytr: ti.map(i => y[i]), Xte: vi.map(i => X[i]), yte: vi.map(i => y[i]) };
+  }
+
+  function mlDist(a, b) { return Math.sqrt(a.reduce((s, v, i) => s + (v - b[i]) ** 2, 0)); }
+
+  /** KNeighborsClassifier — predict labels for Xte using k neighbors */
+  function mlKNN(Xtr, ytr, Xte, k) {
+    return Xte.map(q => {
+      const sorted = Xtr.map((p, i) => [mlDist(q, p), ytr[i]]).sort((a, b) => a[0] - b[0]).slice(0, k);
+      const v = {}; for (const [, l] of sorted) v[l] = (v[l] || 0) + 1;
+      return Object.entries(v).sort((a, b) => b[1] - a[1])[0][0];
+    });
+  }
+
+  /** DecisionTreeRegressor — recursive mean-split, maxDepth=3 */
+  function mlBuildDT(X, y, depth, maxDepth) {
+    const mean = y.reduce((s, v) => s + v, 0) / y.length;
+    if (depth >= maxDepth || y.length <= 3) return { leaf: true, val: mean };
+    let best = { mse: Infinity, fi: -1, th: 0 };
+    for (let fi = 0; fi < X[0].length; fi++) {
+      const vals = [...new Set(X.map(r => r[fi]))].sort((a, b) => a - b);
+      for (let k = 0; k < vals.length - 1; k++) {
+        const th = (vals[k] + vals[k + 1]) / 2;
+        const L = [], R = [];
+        X.forEach((r, i) => (r[fi] <= th ? L : R).push(y[i]));
+        if (!L.length || !R.length) continue;
+        const lm = L.reduce((s, v) => s + v, 0) / L.length;
+        const rm = R.reduce((s, v) => s + v, 0) / R.length;
+        const mse = (L.reduce((s, v) => s + (v - lm) ** 2, 0) + R.reduce((s, v) => s + (v - rm) ** 2, 0)) / (L.length + R.length);
+        if (mse < best.mse) best = { mse, fi, th };
+      }
+    }
+    if (best.fi === -1) return { leaf: true, val: mean };
+    const LX = [], LY = [], RX = [], RY = [];
+    X.forEach((r, i) => { if (r[best.fi] <= best.th) { LX.push(r); LY.push(y[i]); } else { RX.push(r); RY.push(y[i]); } });
+    return { leaf: false, fi: best.fi, th: best.th, left: mlBuildDT(LX, LY, depth + 1, maxDepth), right: mlBuildDT(RX, RY, depth + 1, maxDepth) };
+  }
+
+  function mlPredDT(node, x) {
+    return node.leaf ? node.val : (x[node.fi] <= node.th ? mlPredDT(node.left, x) : mlPredDT(node.right, x));
+  }
+
+  /** RandomForestRegressor — n_estimators bootstrap trees, averaged predictions */
+  function mlRF(Xtr, ytr, nTrees, maxDepth, seed) {
+    const rng = mlRand(seed);
+    return Array.from({ length: nTrees }, () => {
+      const n = Xtr.length; const bX = [], bY = [];
+      for (let i = 0; i < n; i++) { const r = Math.floor(rng() * n); bX.push(Xtr[r]); bY.push(ytr[r]); }
+      return mlBuildDT(bX, bY, 0, maxDepth);
+    });
+  }
+
+  function mlPredRF(trees, x) { return trees.reduce((s, t) => s + mlPredDT(t, x), 0) / trees.length; }
+
+  /** feature_importances_ via split-frequency across all trees */
+  function mlImportances(trees, d) {
+    const counts = Array(d).fill(0);
+    function walk(n) { if (!n.leaf) { counts[n.fi]++; walk(n.left); walk(n.right); } }
+    for (const t of trees) walk(t);
+    const tot = counts.reduce((s, v) => s + v, 0) || 1;
+    return counts.map(c => c / tot);
+  }
+
+  /** KMeans — Lloyd's algorithm, n_init restarts, pick lowest inertia */
+  function mlKMeans(X, k, seed, nInit) {
+    const rng = mlRand(seed);
+    let best = null;
+    for (let init = 0; init < nInit; init++) {
+      const picked = new Set();
+      while (picked.size < k) picked.add(Math.floor(rng() * X.length));
+      let cents = [...picked].map(i => [...X[i]]);
+      let labels = new Array(X.length).fill(0);
+      for (let iter = 0; iter < 100; iter++) {
+        const nl = X.map(p => { let bc = 0, bd = Infinity; cents.forEach((c, ci) => { const d = mlDist(p, c); if (d < bd) { bd = d; bc = ci; } }); return bc; });
+        const conv = nl.every((l, i) => l === labels[i]);
+        labels = nl;
+        if (conv) break;
+        const sums = Array.from({ length: k }, () => Array(X[0].length).fill(0)), cnts = Array(k).fill(0);
+        X.forEach((p, i) => { p.forEach((v, d) => (sums[labels[i]][d] += v)); cnts[labels[i]]++; });
+        cents = sums.map((s, ci) => s.map(v => cnts[ci] ? v / cnts[ci] : rng() * 2 - 1));
+      }
+      const inertia = X.reduce((s, p, i) => s + mlDist(p, cents[labels[i]]) ** 2, 0);
+      if (!best || inertia < best.inertia) best = { labels: [...labels], cents: cents.map(c => [...c]), inertia };
+    }
+    return best;
+  }
+
+  /* ── KMeans Scatter SVG (200×200) ───────────────────────── */
+  function KMeansScatter({ points, labels, cents, colors }) {
+    const W = 200, H = 200, P = 16;
+    const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs);
+    const y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const xR = x1 - x0 || 1, yR = y1 - y0 || 1;
+    const px = v => P + ((v - x0) / xR) * (W - 2 * P);
+    const py = v => H - P - ((v - y0) / yR) * (H - 2 * P);
+    const n = points.length;
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="ml-scatter-svg" aria-label="K-Means cluster scatter plot">
+        {points.map((p, i) => (
+          <circle key={i} cx={px(p[0])} cy={py(p[1])}
+            r={i === n - 1 ? 5.5 : 3}
+            fill={colors[labels[i]]}
+            opacity={i === n - 1 ? 1 : 0.5}
+            stroke={i === n - 1 ? '#fff' : 'none'}
+            strokeWidth={i === n - 1 ? 1.5 : 0} />
+        ))}
+        {cents.map((c, ci) => (
+          <g key={`c${ci}`}>
+            <circle cx={px(c[0])} cy={py(c[1])} r={9} fill="none" stroke={colors[ci]} strokeWidth={2} opacity={0.9} />
+            <circle cx={px(c[0])} cy={py(c[1])} r={3} fill={colors[ci]} />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  /* ── MLInsightsSection ──────────────────────────────────── */
+  function MLInsightsSection({ workoutLogs }) {
+    const [results, setResults] = useState(null);
+    const [running, setRunning] = useState(false);
+    const MIN_LOGS = 10;
+    const COLORS = ['#4ECDC4', '#E57399', '#c084fc'];
+
+    const toFeats = (logs) => logs.map(log => {
+      const sets = log.sets || [];
+      const n = sets.length || 1;
+      const avgReps = sets.reduce((s, x) => s + (Number(x.reps) || 0), 0) / n;
+      const vol = sets.reduce((s, x) => s + (Number(x.reps) || 0) * (Number(x.weight) || 0), 0);
+      const cal = Math.max(1, Math.round(vol * 0.04 + avgReps * n * 0.3 + 10));
+      return { cal, dur: n * 2.5, sets: n, reps: Math.round(avgReps) };
+    });
+
+    const runModels = () => {
+      setResults(null);
+      setRunning(true);
+      setTimeout(() => {
+        try {
+          const feats = toFeats(workoutLogs);
+
+          /* ── Model 1: KNN Classifier ─────────────────────── */
+          const knnLabel = f => f.cal < 200 ? 'Light' : f.cal <= 400 ? 'Moderate' : 'Intense';
+          const knnX = feats.map(f => [f.cal, f.dur, f.sets, f.reps]);
+          const knnY = feats.map(knnLabel);
+          const kS = mlScale(knnX);
+          const knnXs = kS.transform(knnX);
+          const { Xtr: kTr, ytr: kYtr, Xte: kTe, yte: kYte } = mlSplit(knnXs, knnY, 0.3, 42);
+          const kPreds = mlKNN(kTr, kYtr, kTe, 5);
+          const kAcc = kPreds.filter((p, i) => p === kYte[i]).length / (kYte.length || 1);
+          const latestKNN = mlKNN(kTr, kYtr, [kS.transform([knnX[knnX.length - 1]])[0]], 5)[0];
+
+          /* ── Model 2: Random Forest Regressor ───────────── */
+          const rfX = feats.map(f => [f.sets, f.reps, f.dur]);
+          const rfY = feats.map(f => f.cal);
+          const rS = mlScale(rfX);
+          const rfXs = rS.transform(rfX);
+          const { Xtr: rTr, ytr: rYtr, Xte: rTe, yte: rYte } = mlSplit(rfXs, rfY, 0.3, 42);
+          const dtNode = mlBuildDT(rTr, rYtr, 0, 3);
+          const dtPreds = rTe.map(x => mlPredDT(dtNode, x));
+          const dtMSE = dtPreds.reduce((s, v, i) => s + (v - rYte[i]) ** 2, 0) / (rYte.length || 1);
+          const rfTrees = mlRF(rTr, rYtr, 5, 3, 42);
+          const rfPreds = rTe.map(x => mlPredRF(rfTrees, x));
+          const rfMSE = rfPreds.reduce((s, v, i) => s + (v - rYte[i]) ** 2, 0) / (rYte.length || 1);
+          const imp = mlImportances(rfTrees, 3);
+          const latestRF = Math.max(0, Math.round(mlPredRF(rfTrees, rS.transform([rfX[rfX.length - 1]])[0])));
+
+          /* ── Model 3: K-Means Clustering ────────────────── */
+          const kmX = feats.map(f => [f.cal, f.dur]);
+          const kmS = mlScale(kmX);
+          const kmXs = kmS.transform(kmX);
+          const km = mlKMeans(kmXs, 3, 42, 10);
+          const sorted = [...km.cents.map((c, i) => ({ i, v: c[0] }))].sort((a, b) => a.v - b.v);
+          const clusterNames = {};
+          clusterNames[sorted[0].i] = 'Recovery';
+          clusterNames[sorted[1].i] = 'Training';
+          clusterNames[sorted[2].i] = 'Peak';
+          const latestKM = clusterNames[km.labels[km.labels.length - 1]];
+
+          // Cluster stats using original (unscaled) values
+          const clusterStats = {};
+          for (let ci = 0; ci < 3; ci++) {
+            const members = kmX.filter((_, i) => km.labels[i] === ci);
+            const count = members.length;
+            const avgCal = count ? Math.round(members.reduce((s, p) => s + p[0], 0) / count) : 0;
+            const avgDur = count ? +(members.reduce((s, p) => s + p[1], 0) / count).toFixed(1) : 0;
+            clusterStats[ci] = { count, avgCal, avgDur, name: clusterNames[ci] };
+          }
+
+          setResults({
+            knn: { acc: kAcc, pred: latestKNN },
+            rf: { dtMSE, rfMSE, nextCal: latestRF, imp, featNames: ['Sets', 'Reps', 'Duration'] },
+            km: { points: kmXs, labels: km.labels, cents: km.cents, clusterNames, clusterStats, latestCluster: latestKM },
+          });
+        } catch (err) {
+          console.error('[ML] Error:', err);
+        }
+        setRunning(false);
+      }, 80);
+    };
+
+    const intensityColor = { Light: '#4ECDC4', Moderate: '#A8E63D', Intense: '#F472B6' };
+
+    if (!workoutLogs || workoutLogs.length < MIN_LOGS) {
+      return (
+        <div className="ml-section">
+          <div className="ml-section-head">
+            <h2 className="ml-section-title">AI Insights</h2>
+            <p className="ml-section-sub">Models trained on your workout history</p>
+          </div>
+          <div className="chart-card ml-empty-card">
+            <div className="ml-empty-icon">🤖</div>
+            <p className="ml-empty-msg">Not enough data yet (need 10+ workouts)</p>
+            <p className="ml-empty-hint">Keep logging workouts to unlock ML analysis</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="ml-section">
+        <div className="ml-section-head">
+          <div>
+            <h2 className="ml-section-title">AI Insights</h2>
+            <p className="ml-section-sub">Models trained on {workoutLogs.length} workout logs</p>
+          </div>
+          <button className="ml-run-btn" onClick={runModels} disabled={running}>
+            {running ? <span className="ml-spinner" /> : '▶ Run Models'}
+          </button>
+        </div>
+
+        {!results && !running && (
+          <div className="chart-card ml-prompt-card">
+            <span className="ml-prompt-icon">🧠</span>
+            <span className="ml-prompt-text">Analyze {workoutLogs.length} workout logs with KNN · Random Forest · K-Means</span>
+          </div>
+        )}
+
+        {results && (
+          <div className="ml-cards">
+
+            {/* ── KNN Card ──────────────────────────────────── */}
+            <div className="chart-card ml-model-card">
+              <div className="ml-card-top">
+                <div>
+                  <div className="ml-model-name">KNN Classifier</div>
+                  <span className="ml-badge ml-badge-sup">Supervised</span>
+                </div>
+                <span className="ml-card-icon">🎯</span>
+              </div>
+              <div className="ml-features">Features: <b>calories · duration · sets · reps</b></div>
+              <div className="ml-result-row">
+                <div className="ml-result-label">Latest workout intensity</div>
+                <div className="ml-result-val" style={{ color: intensityColor[results.knn.pred] }}>
+                  {results.knn.pred}
+                </div>
+              </div>
+              <div className="ml-metric-row">
+                <span>Test accuracy (k=5)</span>
+                <span className="ml-metric-val">{(results.knn.acc * 100).toFixed(1)}%</span>
+              </div>
+              <div className="ml-interp">
+                Most recent workout classified as <b>{results.knn.pred}</b> intensity using 5 nearest neighbors on scaled features.
+              </div>
+            </div>
+
+            {/* ── RF Card ───────────────────────────────────── */}
+            <div className="chart-card ml-model-card">
+              <div className="ml-card-top">
+                <div>
+                  <div className="ml-model-name">Random Forest</div>
+                  <span className="ml-badge ml-badge-sup">Supervised</span>
+                </div>
+                <span className="ml-card-icon">🌲</span>
+              </div>
+              <div className="ml-features">Features: <b>sets · reps · duration</b></div>
+              <div className="ml-result-row">
+                <div className="ml-result-label">Predicted next workout</div>
+                <div className="ml-result-val">{results.rf.nextCal} kcal</div>
+              </div>
+              <div className="ml-metric-row">
+                <span>Model MSE (test set)</span>
+                <span className="ml-metric-val">{results.rf.rfMSE.toFixed(1)}</span>
+              </div>
+              <div className="ml-interp">
+                5 decision trees trained on bootstrap samples of your logs. Each tree votes and predictions are averaged — reducing the variance of any single tree. Your next workout is predicted to burn <b>~{results.rf.nextCal} kcal</b>.
+              </div>
+            </div>
+
+            {/* ── K-Means Card ──────────────────────────────── */}
+            <div className="chart-card ml-model-card ml-kmeans-card">
+              <div className="ml-card-top">
+                <div>
+                  <div className="ml-model-name">K-Means Clustering</div>
+                  <span className="ml-badge ml-badge-unsup">Unsupervised</span>
+                </div>
+                <span className="ml-card-icon">🔵</span>
+              </div>
+              <div className="ml-features">Features: <b>calories · duration</b></div>
+              <div className="ml-result-row">
+                <div className="ml-result-label">Latest workout cluster</div>
+                <div className="ml-result-val" style={{ color: COLORS[Object.keys(results.km.clusterNames).find(k => results.km.clusterNames[k] === results.km.latestCluster)] }}>
+                  {results.km.latestCluster}
+                </div>
+              </div>
+              <div className="ml-km-body">
+                <KMeansScatter points={results.km.points} labels={results.km.labels} cents={results.km.cents} colors={COLORS} />
+                <div className="ml-km-cluster-table">
+                  {Object.entries(results.km.clusterStats).map(([ci, s]) => (
+                    <div key={ci} className="ml-km-cluster-row">
+                      <span className="ml-cluster-dot" style={{ background: COLORS[ci] }} />
+                      <span className="ml-km-cluster-name" style={{ color: COLORS[ci] }}>{s.name}</span>
+                      <span className="ml-km-cluster-stat">{s.count} session{s.count !== 1 ? 's' : ''}</span>
+                      <span className="ml-km-cluster-stat">~{s.avgCal} kcal</span>
+                      <span className="ml-km-cluster-stat">{s.avgDur} min</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="ml-interp">
+                Your {results.km.labels.length} logged exercises were grouped into 3 clusters by the algorithm — no labels given, it found the structure on its own. <b>Recovery</b> = low-effort sets, <b>Training</b> = moderate volume, <b>Peak</b> = high-intensity. Your most recent session landed in <b>{results.km.latestCluster}</b>. Circles on the plot mark cluster centroids.
+              </div>
+            </div>
+
+          </div>
+        )}
+      </div>
+    );
+  }
+
   /* ── TrackerPage (main) ──────────────────────────────────── */
   function TrackerPage({ profile }) {
     const [recentExercises, setRecentExercises] = useState([]);
+    const [workoutLogs, setWorkoutLogs] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dataVersion, setDataVersion] = useState(0);
 
     const loadAll = useCallback(async () => {
       const [trackerRes, statsRes] = await Promise.all([
-        SpotMe.api.getTracker(14),
+        SpotMe.api.getTracker(90),
         SpotMe.api.getTrackerStats()
       ]);
       if (trackerRes.ok) {
         setRecentExercises(trackerRes.data.recentExercises || []);
+        const flat = [];
+        for (const day of Object.values(trackerRes.data.days || {})) flat.push(...day);
+        setWorkoutLogs(flat);
       }
       if (statsRes.ok) {
         setStats(statsRes.data.stats);
@@ -510,6 +879,9 @@
             onLog={loadAll}
             weightUnit={profile?.weightUnit || 'kg'}
           />
+
+          {/* ML Insights */}
+          <MLInsightsSection workoutLogs={workoutLogs} />
         </div>
       </div>
     );

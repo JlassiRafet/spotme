@@ -8876,3 +8876,314 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 [data-theme="light"] .fit-card-purple { background: linear-gradient(135deg, rgba(124,58,237,0.88) 0%, rgba(91,33,182,0.92) 100%); }
 [data-theme="light"] .fit-card-pink   { background: linear-gradient(135deg, rgba(236,72,153,0.88) 0%, rgba(190,24,93,0.92) 100%); }
 [data-theme="light"] .fit-chip:not(.is-active):hover { background: rgba(139,92,246,0.12); color: #6d28d9; border-color: rgba(139,92,246,0.25); }
+
+/* ══════════════════════════════════════════════════════════════
+   ML Insights Section — TrackerPage
+   ══════════════════════════════════════════════════════════════ */
+.ml-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.ml-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ml-section-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.01em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.ml-section-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+/* Run Models button */
+.ml-run-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #4ECDC4 0%, #00b4a6 100%);
+  color: #0a1420;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.12s;
+  letter-spacing: 0.02em;
+  min-width: 120px;
+}
+.ml-run-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.ml-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Spinner inside button */
+.ml-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(10, 20, 32, 0.3);
+  border-top-color: #0a1420;
+  border-radius: 50%;
+  animation: mlSpin 0.65s linear infinite;
+}
+@keyframes mlSpin { to { transform: rotate(360deg); } }
+
+/* Empty / prompt states */
+.ml-empty-card,
+.ml-prompt-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 20px;
+  text-align: center;
+}
+.ml-prompt-card {
+  flex-direction: row;
+  padding: 18px 22px;
+}
+.ml-empty-icon { font-size: 2.4rem; line-height: 1; }
+.ml-empty-msg { font-size: 0.95rem; color: rgba(255,255,255,0.7); margin: 0; font-weight: 600; }
+.ml-empty-hint { font-size: 0.78rem; color: rgba(255,255,255,0.35); margin: 0; }
+.ml-prompt-icon { font-size: 1.4rem; flex-shrink: 0; }
+.ml-prompt-text { font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+/* Cards grid */
+.ml-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* Individual model card */
+.ml-model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.ml-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.ml-model-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.ml-card-icon { font-size: 1.5rem; line-height: 1; }
+
+/* Type badges */
+.ml-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ml-badge-sup {
+  background: rgba(78, 205, 196, 0.15);
+  color: #4ECDC4;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+.ml-badge-unsup {
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+/* Features row */
+.ml-features {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.38);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ml-features b { color: rgba(255, 255, 255, 0.65); font-weight: 600; }
+
+/* Result highlight */
+.ml-result-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.ml-result-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
+.ml-result-val {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #4ECDC4;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* Metric rows (MSE / accuracy) */
+.ml-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ml-metric-row:last-of-type { border-bottom: none; }
+.ml-metric-val { font-weight: 700; color: rgba(255,255,255,0.8); }
+
+/* Feature importance bars */
+.ml-importance { display: flex; flex-direction: column; gap: 6px; }
+.ml-importance-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 2px;
+}
+.ml-imp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+.ml-imp-name { width: 60px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
+.ml-imp-bar-bg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+.ml-imp-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #4ECDC4 0%, #c084fc 100%);
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+.ml-imp-pct { width: 32px; text-align: right; color: rgba(255,255,255,0.5); flex-shrink: 0; }
+
+/* K-Means card body layout */
+.ml-km-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.ml-scatter-svg {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.ml-km-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.ml-cluster-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.04);
+  white-space: nowrap;
+}
+.ml-cluster-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* K-Means cluster stats table */
+.ml-km-cluster-table {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  justify-content: center;
+}
+.ml-km-cluster-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.ml-km-cluster-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  min-width: 72px;
+}
+.ml-km-cluster-stat {
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.42);
+  white-space: nowrap;
+}
+
+/* K-Means card: full width on wider screens */
+.ml-kmeans-card { grid-column: 1 / -1; }
+@media (min-width: 640px) {
+  .ml-kmeans-card { grid-column: auto; }
+  .ml-km-body { flex-direction: column; align-items: stretch; }
+}
+@media (min-width: 800px) {
+  .ml-kmeans-card { grid-column: 1 / -1; }
+  .ml-km-body { flex-direction: row; align-items: flex-start; }
+}
+
+/* Interpretation line */
+.ml-interp {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.5;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.ml-interp b { color: rgba(255,255,255,0.75); }
