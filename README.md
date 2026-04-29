@@ -44,7 +44,7 @@ spotme/
 │   ├── ProfilePage.jsx     Profile, metrics, subscription settings
 │   ├── ProgramsPage.jsx    Program grid with category filter
 │   ├── ProgramDetailPage.jsx  Program detail + SessionRunner (timer, MuscleMap, steps)
-│   ├── TrackerPage.jsx     Activity tracker — streak, charts, quick-log
+│   ├── TrackerPage.jsx     Activity tracker — streak, charts, quick-log, ML Insights (KNN/RF/K-Means)
 │   ├── CompletionPage.jsx  Post-workout completion screen
 │   ├── PlansPage.jsx       Pricing / subscription tiers
 │   ├── AboutPage.jsx       About page
@@ -185,6 +185,7 @@ npm run test:k6:stress   # 0→200 VU spike
 - [x] Workout runner — step-by-step timer with MuscleMap SVG (front + back body diagram)
 - [x] MuscleMap — highlights chest, shoulders, lats, quads, hamstrings etc. per exercise
 - [x] Tracker — activity log, streak card, weekly chart, quick-add exercises
+- [x] ML Insights — in-browser KNN classifier, Random Forest regressor, K-Means clustering (no libraries, pure JS)
 - [x] Auth + onboarding rethemed — dark green background, teal (#00e5c0) accent, Oswald font
 - [x] Stripe webhook endpoint (payment flow stub)
 - [x] 74 automated tests passing (unit + integration)
@@ -214,3 +215,5 @@ npm run test:k6:stress   # 0→200 VU spike
 6. **Patch-based DB migrations.** `seedPrograms()` runs once on first boot. `patchDietMacro()`, `patchDietPrograms()`, `patchMusclePrograms()` run on every boot — content updates reach existing databases automatically.
 
 7. **MuscleMap driven by `tips` field.** Each program session has a `tips` string starting with `Primary: chest, shoulders, triceps`. The `MuscleMap` SVG parses this and lights up the correct regions — no hardcoded muscle lists in the UI.
+
+8. **In-browser ML (no libraries).** `TrackerPage` implements StandardScaler, KNN (k=5), Decision Tree + Random Forest (5 bootstrap trees), and K-Means (Lloyd's, n_init=10) from scratch in plain JavaScript — mirroring the sklearn API used in class labs. Models run on-demand via "Run Models" button against the user's real workout log data.
