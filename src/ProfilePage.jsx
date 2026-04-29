@@ -323,7 +323,7 @@
       setAppearance(pref);
     }
 
-    const planLabel = profile.subscription === 'pro' ? 'SpotMe Pro' : 'Free';
+    const planLabel = profile.plan === 'pro' ? 'SpotMe Pro' : 'Free';
 
     /* Derive display labels */
     const currentLang = SpotMe.i18n.LANGUAGES.find(l => l.code === language);

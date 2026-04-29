@@ -3399,7 +3399,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   width: 80px;
   height: 80px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #5c8cff 0%, #7b55ff 100%);
+  background: linear-gradient(135deg, #00e5a0 0%, #00b89a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3483,7 +3483,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .settings-section-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #5c7aa8;
+  color: #7687ad;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 10px 4px 4px;
@@ -3549,8 +3549,8 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   letter-spacing: 0.04em;
   padding: 2px 7px;
   border-radius: 9999px;
-  background: rgba(90, 140, 255, 0.15);
-  color: #7aadff;
+  background: rgba(0, 229, 160, 0.12);
+  color: #00e5a0;
 }
 .settings-toggle {
   width: 46px;
@@ -3564,7 +3564,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   flex-shrink: 0;
   padding: 0;
 }
-.settings-toggle.is-on { background: #4d8aff; }
+.settings-toggle.is-on { background: #00e5a0; }
 .settings-toggle-thumb {
   position: absolute;
   top: 3px;
@@ -8219,7 +8219,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 [data-theme="light"] .settings-nav-title { color: #1e2d4a; }
 [data-theme="light"] .settings-nav-item { color: #6278a0; }
 [data-theme="light"] .settings-nav-item:hover { background: rgba(100, 130, 220, 0.08); color: #1e2d4a; }
-[data-theme="light"] .settings-nav-item.is-active { background: rgba(109, 129, 255, 0.12); color: #1e2d4a; }
+[data-theme="light"] .settings-nav-item.is-active { background: rgba(0, 229, 160, 0.12); color: #0c0601; }
 
 [data-theme="light"] .settings-name { color: #1e2d4a; }
 [data-theme="light"] .settings-handle { color: #8097c0; }
@@ -8233,7 +8233,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 [data-theme="light"] .settings-row-value { color: #6278a0; }
 [data-theme="light"] .settings-row.is-interactive:hover { background: rgba(100,130,220,0.06); }
 [data-theme="light"] .settings-row.is-interactive:active { background: rgba(100,130,220,0.11); }
-[data-theme="light"] .settings-badge { background: rgba(90,140,255,0.12); color: #4a78d4; }
+[data-theme="light"] .settings-badge { background: rgba(0, 229, 160, 0.12); color: #00b07c; }
 [data-theme="light"] .settings-logout-btn { border-color: rgba(114,140,201,0.2); background: rgba(255,255,255,0.5); color: #4a5d82; }
 [data-theme="light"] .settings-logout-btn:hover { background: rgba(255,255,255,0.85); color: #1e2d4a; }
 [data-theme="light"] .settings-delete-btn { border-color: rgba(220,60,60,0.2); background: rgba(220,60,60,0.04); color: #c04040; }
@@ -8245,7 +8245,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 
 /* Toggle (on light) */
 [data-theme="light"] .settings-toggle { background: rgba(114,140,201,0.22); }
-[data-theme="light"] .settings-toggle.is-on { background: #5c7fff; }
+[data-theme="light"] .settings-toggle.is-on { background: #00e5a0; }
 [data-theme="light"] .settings-toggle-thumb { background: #fff; }
 
 /* Settings modal on light */
