@@ -464,13 +464,12 @@ html, body {
     0 14px 38px rgba(0, 200, 130, 0.55),
     0 22px 60px rgba(0, 160, 90, 0.35);
 }
-.btn-primary:hover { 
+.btn-primary:hover {
   color: #000f06;
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 12px 32px rgba(0, 180, 110, 0.5);
 }
-
-.btn-primary:active { 
+.btn-primary:active {
   transform: translateY(1px) scale(0.97);
   transition-duration: 0.1s;
 }
@@ -5448,10 +5447,14 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 8px;
+  padding: 18px 20px 14px;
   position: sticky;
   top: 0;
   z-index: 10;
+  background: rgba(8, 10, 20, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .fit-topbar-title {
   font-size: 0.95rem;
@@ -8460,7 +8463,10 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 }
 
 /* Topbar */
-[data-theme="light"] .fit-topbar { background: transparent; }
+[data-theme="light"] .fit-topbar {
+  background: rgba(245, 245, 250, 0.92);
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+}
 [data-theme="light"] .fit-topbar-title { color: var(--ink-2); }
 
 /* Home page */
@@ -8639,7 +8645,7 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .theme-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 10px;
   background: rgba(20, 20, 22, 0.9);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 999px;
@@ -8659,25 +8665,40 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
 .theme-pill-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.55);
   letter-spacing: 0.02em;
-  margin-right: 10px;
   user-select: none;
+  min-width: 30px;
+}
+/* Sliding track */
+.theme-pill-track {
+  position: relative;
+  width: 54px;
+  height: 32px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 .theme-pill-knob {
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.14);
   display: flex;
   align-items: center;
   justify-content: center;
   color: rgba(255,255,255,0.85);
-  flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
-  transition: background 200ms ease;
+  transition: transform 260ms cubic-bezier(0.22,1,0.36,1), background 200ms ease;
 }
-.theme-pill-btn:hover .theme-pill-knob { background: rgba(255,255,255,0.18); }
+/* Knob slides right when in light mode */
+.theme-pill-btn.is-light .theme-pill-knob {
+  transform: translateX(22px);
+}
+.theme-pill-btn:hover .theme-pill-knob { background: rgba(255,255,255,0.22); }
 
 /* Light-mode pill */
 [data-theme="light"] .theme-pill-btn {
@@ -8689,9 +8710,10 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   background: rgba(215, 215, 226, 0.98);
   box-shadow: 0 6px 28px rgba(0,0,0,0.14);
 }
-[data-theme="light"] .theme-pill-label { color: rgba(0,0,0,0.42); }
+[data-theme="light"] .theme-pill-label { color: rgba(0,0,0,0.52); }
+[data-theme="light"] .theme-pill-track { background: rgba(0,0,0,0.08); }
 [data-theme="light"] .theme-pill-knob {
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   color: rgba(0,0,0,0.65);
   box-shadow: 0 2px 8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1);
 }
@@ -9432,3 +9454,99 @@ body:has(.marketing-shell) .auth-bg-glow .blob-right {
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .ml-interp b { color: rgba(255,255,255,0.75); }
+
+/* ═══════════════════════════════════════════════════════════
+   Light mode — auth buttons (teal + proper hover)
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, rgba(13,168,152,0.16) 0%, rgba(10,140,128,0.10) 100%);
+  color: #0a7a70;
+  border-color: rgba(13,168,152,0.28);
+  box-shadow: 0 4px 16px rgba(13,168,152,0.12);
+}
+[data-theme="light"] .btn-primary:hover {
+  color: #085f58;
+  background: linear-gradient(135deg, rgba(13,168,152,0.24) 0%, rgba(10,140,128,0.16) 100%);
+  box-shadow: 0 6px 22px rgba(13,168,152,0.22);
+}
+[data-theme="light"] .btn-primary .btn-label {
+  text-shadow: none;
+}
+[data-theme="light"] .btn-google {
+  background: rgba(255,255,255,0.85);
+  color: #2d2d38;
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+[data-theme="light"] .btn-google:hover {
+  background: rgba(245,245,252,0.98);
+  color: #0a0a0c;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .btn-primary .btn-glow { box-shadow: 0 0 0 1px rgba(13,168,152,0.25), 0 0 16px rgba(13,168,152,0.3); }
+[data-theme="light"] .btn-google .btn-glow  { box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 0 12px rgba(0,0,0,0.1); }
+
+/* ═══════════════════════════════════════════════════════════
+   Light mode — Activities page
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .fit-metric-tile {
+  border-color: rgba(0,0,0,0.07);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+}
+[data-theme="light"] .fit-bar-chart {
+  border-color: rgba(0,0,0,0.07);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+}
+[data-theme="light"] .fit-wave-card {
+  border-color: rgba(0,0,0,0.07);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+}
+[data-theme="light"] .fit-calories {
+  border-top-color: rgba(0,0,0,0.07);
+}
+[data-theme="light"] .fit-day {
+  color: var(--ink-3);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .fit-day:hover {
+  color: var(--ink-1);
+  background: var(--bg-surface-2);
+}
+[data-theme="light"] .fit-day.is-active {
+  background: var(--acc-lime);
+  color: #1f3000;
+  border-color: transparent;
+}
+[data-theme="light"] .fit-bar-chart-title { color: var(--ink-1); }
+[data-theme="light"] .fit-bar-label { color: var(--ink-3); }
+[data-theme="light"] .fit-bar-callout { background: var(--bg-surface-1); color: var(--ink-1); border: 1px solid rgba(0,0,0,0.08); }
+[data-theme="light"] .fit-wave-title { color: var(--ink-1); }
+[data-theme="light"] .fit-wave-step { color: var(--ink-3); }
+[data-theme="light"] .fit-wave-time { color: var(--ink-3); }
+[data-theme="light"] .fit-metric-name { color: var(--ink-2); }
+[data-theme="light"] .fit-metric-unit { color: var(--ink-3); }
+[data-theme="light"] .fit-metric-value { color: var(--ink-1); }
+[data-theme="light"] .fit-calories-label { color: var(--ink-3); }
+[data-theme="light"] .fit-calories-value { color: var(--ink-1); }
+[data-theme="light"] .fit-metric-icon { background: rgba(13,168,152,0.12); color: var(--acc-mint); }
+[data-theme="light"] .fit-metric-icon.is-water { background: rgba(45,182,255,0.1); color: #2aa8e0; }
+[data-theme="light"] .fit-metric-icon.is-flame { background: rgba(255,108,40,0.1); color: #cc5c22; }
+[data-theme="light"] .fit-metric-icon.is-heart { background: rgba(255,90,108,0.1); color: #c0384a; }
+
+/* ═══════════════════════════════════════════════════════════
+   Light mode — marketing page nav + buttons
+   ═══════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .marketing-nav-pill {
+  background: rgba(255,255,255,0.88);
+  border-color: rgba(0,0,0,0.1);
+}
+[data-theme="light"] .nav-pill-brand { color: var(--ink-1); }
+[data-theme="light"] .nav-pill-link { color: var(--ink-3); }
+[data-theme="light"] .nav-pill-link:hover { color: var(--ink-1); background: rgba(0,0,0,0.05); }
+[data-theme="light"] .nav-pill-login { color: var(--ink-3); }
+[data-theme="light"] .nav-pill-login:hover { color: var(--ink-1); }
+[data-theme="light"] .nav-pill-cta { background: var(--ink-1); color: #fff; }
+[data-theme="light"] .nav-pill-cta:hover { background: var(--acc-mint); }

@@ -353,7 +353,7 @@
         <div className="marketing-shell-body">
 
         {/* ── Hero ────────────────────────────────────────────── */}
-        <main className="marketing-hero" style={{ paddingTop: 0, marginTop: 0 }}>
+        <main className="marketing-hero" style={{ paddingTop: 48 }}>
           <div className="hero-bg-blur" aria-hidden="true" />
           <div className="hero-orb hero-orb-1" aria-hidden="true" />
           <div className="hero-orb hero-orb-2" aria-hidden="true" />

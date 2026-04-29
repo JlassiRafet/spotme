@@ -390,6 +390,7 @@
     const HIDE_TOPBAR = ['runner', 'dietRunner', 'completion', 'activities', 'programs', 'program', 'diet', 'membership', 'home', 'help-center', 'terms', 'privacy'];
     const showTopbar = !HIDE_TOPBAR.includes(route.name);
     const isFullScreenMode = route.name === 'runner' || route.name === 'dietRunner';
+    const TOPBAR_TITLES = { profile: 'Settings', history: 'History' };
 
     /* render -------------------------------------------------- */
     return (
@@ -418,7 +419,9 @@
               >
                 <span style={{ width: 18, height: 18, display: 'inline-flex' }}><MenuIcon /></span>
               </button>
-              <h1 className="fit-topbar-title">SpotMe</h1>
+              {TOPBAR_TITLES[route.name] && (
+                <h1 className="fit-topbar-title">{TOPBAR_TITLES[route.name]}</h1>
+              )}
               <div className="fit-topbar-actions">
               </div>
             </header>

@@ -489,17 +489,20 @@
 
   function ThemePill() {
     const [theme, toggle] = useTheme();
+    const isDark = theme === 'dark';
     return (
       <button
         type="button"
-        className="theme-pill-btn"
+        className={`theme-pill-btn${isDark ? '' : ' is-light'}`}
         onClick={toggle}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
-        <span className="theme-pill-label">{theme === 'dark' ? 'Dark' : 'Light'}</span>
-        <span className="theme-pill-knob">
-          <span style={{ width: 16, height: 16, display: 'inline-flex' }}>
-            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        <span className="theme-pill-label">{isDark ? 'Dark' : 'Light'}</span>
+        <span className="theme-pill-track">
+          <span className="theme-pill-knob">
+            <span style={{ width: 14, height: 14, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              {isDark ? <MoonIcon /> : <SunIcon />}
+            </span>
           </span>
         </span>
       </button>
