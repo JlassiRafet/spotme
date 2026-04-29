@@ -453,16 +453,16 @@ function seedPrograms() {
     {
       id: 'pull-day', category: 'muscle', name: 'Pull Day',
       difficulty: 'Intermediate', cover_color: 'mint',
-      cover_image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=800&q=70',
-      hero_image:  'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=1200&q=70',
+      cover_image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=1200&q=70',
       total_minutes: 38, total_calories: 1300,
       description: 'Back and biceps — pull-ups, rows and curls for width, thickness and arm strength.'
     },
     {
       id: 'leg-day', category: 'muscle', name: 'Leg Day',
-      difficulty: 'Intermediate', cover_color: 'orange',
-      cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
-      hero_image:  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=70',
+      difficulty: 'Intermediate', cover_color: 'lime',
+      cover_image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=800&q=80',
+      hero_image:  'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=1200&q=80',
       total_minutes: 43, total_calories: 1600,
       description: 'Quads, hamstrings, glutes and calves — squat-based lower body programme for size and strength.'
     },
@@ -485,7 +485,7 @@ function seedPrograms() {
     {
       id: 'lower-pro', category: 'muscle', name: 'Lower Body',
       difficulty: 'Intermediate', cover_color: 'mint',
-      cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
+      cover_image: 'https://images.unsplash.com/photo-1583454155184-870a1f63aebc?auto=format&fit=crop&w=800&q=70',
       hero_image:  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=70',
       total_minutes: 42, total_calories: 1200,
       description: 'Quads, hamstrings, glutes, calves — a realistic full lower body training session with strength and muscle-building focus.'
@@ -493,8 +493,8 @@ function seedPrograms() {
     {
       id: 'core-beginner', category: 'muscle', name: 'Core',
       difficulty: 'Beginner', cover_color: 'mint',
-      cover_image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=70',
-      hero_image:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=70',
+      cover_image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=800&q=80',
+      hero_image:  'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=1200&q=80',
       total_minutes: 15, total_calories: 600,
       description: 'Strengthen your trunk with focused, low-impact moves.'
     },
@@ -1041,16 +1041,16 @@ function patchMusclePrograms() {
     {
       id: 'pull-day', category: 'muscle', name: 'Pull Day',
       difficulty: 'Intermediate', cover_color: 'mint',
-      cover_image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=800&q=70',
-      hero_image:  'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?auto=format&fit=crop&w=1200&q=70',
+      cover_image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=70',
+      hero_image:  'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=1200&q=70',
       total_minutes: 38, total_calories: 1300,
       description: 'Back and biceps — pull-ups, rows and curls for width, thickness and arm strength.'
     },
     {
       id: 'leg-day', category: 'muscle', name: 'Leg Day',
-      difficulty: 'Intermediate', cover_color: 'orange',
-      cover_image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=70',
-      hero_image:  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=1200&q=70',
+      difficulty: 'Intermediate', cover_color: 'lime',
+      cover_image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=800&q=80',
+      hero_image:  'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=1200&q=80',
       total_minutes: 43, total_calories: 1600,
       description: 'Quads, hamstrings, glutes and calves — squat-based lower body programme for size and strength.'
     }
