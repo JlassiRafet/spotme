@@ -11,7 +11,7 @@
  *
  * Routes messages through Groq:
  *   - Text-only messages → GROQ_CHAT_MODEL (llama-3.3-70b-versatile)
- *   - Messages with images → GROQ_VISION_MODEL (llama-3.2-11b-vision-preview)
+ *   - Messages with images → GROQ_VISION_MODEL (llama-3.2-90b-vision-preview)
  *
  * Groq's SDK speaks OpenAI's message format:
  *   role: 'system' | 'user' | 'assistant'
@@ -27,7 +27,7 @@ export const chatRoutes = express.Router();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const CHAT_MODEL   = process.env.GROQ_CHAT_MODEL   || 'llama-3.3-70b-versatile';
-const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
+const VISION_MODEL = process.env.GROQ_VISION_MODEL || 'llama-3.2-90b-vision-preview';
 
 /* ---------- language name map ---------- */
 

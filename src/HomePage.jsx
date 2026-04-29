@@ -26,13 +26,13 @@
     return [ref, inView];
   }
 
-  function Reveal({ children, delay = 0, y = 28 }) {
+  function Reveal({ children, delay = 0, y = 16 }) {
     const [ref, inView] = useInView();
     return (
       <div ref={ref} style={{
         opacity: inView ? 1 : 0,
         transform: inView ? 'none' : `translateY(${y}px)`,
-        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}ms`,
       }}>
         {children}
       </div>

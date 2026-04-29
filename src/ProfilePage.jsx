@@ -397,9 +397,7 @@
               <div className="settings-card-divider" />
               <SettingsRow label={t('settings.subscription')} value={planLabel} chevron={false} />
               <div className="settings-card-divider" />
-              <SettingsRow label={t('settings.upgradePro')} onClick={comingSoon} />
-              <div className="settings-card-divider" />
-              <SettingsRow label={t('settings.restorePurchases')} onClick={comingSoon} />
+              <SettingsRow label={t('settings.upgradePro')} onClick={() => onNavigate('membership')} />
               <div className="settings-card-divider" />
               <SettingsRow label={t('settings.notifications')} onClick={comingSoon} badge={t('common.soon')} />
               <div className="settings-card-divider" />

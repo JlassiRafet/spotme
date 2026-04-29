@@ -537,8 +537,8 @@
           {route.name === 'history' && SpotMe.HistoryPage && (
             <div className="fit-page" style={{ paddingTop: 12 }}>
               <SpotMe.HistoryPage
-                onOpenChat={() => {
-                  setDicterOpen(true);
+                onOpenChat={(session) => {
+                  setDicterOpen(session || true);
                   navigate('home');
                 }}
               />
@@ -566,6 +566,7 @@
         {dicterOpen && SpotMe.DicterOverlay && (
           <SpotMe.DicterOverlay
             profile={profile}
+            initialSession={typeof dicterOpen === 'object' ? dicterOpen : null}
             onClose={() => setDicterOpen(false)}
           />
         )}

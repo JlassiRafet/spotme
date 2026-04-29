@@ -178,8 +178,21 @@
     const filtered = sessions
       .filter(s => {
         if (typeFilter !== 'All') {
-          const tags = Array.isArray(s.tags) ? s.tags : (s.tags ? [s.tags] : []);
-          if (!tags.some(t => t.toLowerCase() === typeFilter.toLowerCase())) return false;
+          const tags = Array.isArray(s.tags) ? s.tags : (typeof s.tags === 'string' ? s.tags.split(',') : []);
+          const filterNorm = typeFilter.toLowerCase().replace(/[\s-]/g, '');
+          const filterStem = filterNorm.endsWith('s') ? filterNorm.slice(0, -1) : filterNorm;
+
+          const match = tags.some(t => {
+            const tNorm = t.toLowerCase().replace(/[\s-]/g, '');
+            if (tNorm.includes(filterStem)) return true;
+            // Muscle mappings
+            if (filterNorm === 'chest' && tNorm.includes('pectoralis')) return true;
+            if (filterNorm === 'back' && (tNorm.includes('lat') || tNorm.includes('trapezius') || tNorm.includes('rhomboid'))) return true;
+            if (filterNorm === 'legs' && (tNorm.includes('quad') || tNorm.includes('hamstring') || tNorm.includes('glute'))) return true;
+            if (filterNorm === 'arms' && (tNorm.includes('bicep') || tNorm.includes('tricep'))) return true;
+            return false;
+          });
+          if (!match) return false;
         }
         if (q) {
           const inTitle   = (s.title   || '').toLowerCase().includes(q);
@@ -268,7 +281,7 @@
             {filtered.map(session => {
               const isRenaming = renamingId === session.id;
               const menuIsOpen = openMenu === session.id;
-              const tags = Array.isArray(session.tags) ? session.tags : (session.tags ? [session.tags] : []);
+              const tags = Array.isArray(session.tags) ? session.tags : (typeof session.tags === 'string' ? session.tags.split(',') : []);
 
               return (
                 <div key={session.id}
